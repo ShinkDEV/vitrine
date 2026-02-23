@@ -118,6 +118,19 @@ const EditProfile = () => {
     mutationFn: async () => {
       if (!professional) return;
 
+      // Validate slug
+      const cleanSlug = form.slug.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-").replace(/^-|-$/g, "");
+      if (!cleanSlug) throw new Error("Username é obrigatório.");
+      if (cleanSlug !== professional.slug) {
+        const { data: existing } = await supabase
+          .from("professionals")
+          .select("id")
+          .eq("slug", cleanSlug)
+          .neq("id", professional.id)
+          .maybeSingle();
+        if (existing) throw new Error("Este username já está em uso. Escolha outro.");
+      }
+
       const whatsappClean = form.whatsapp_number.replace(/\D/g, "");
       const { error } = await supabase
         .from("professionals")
@@ -134,6 +147,7 @@ const EditProfile = () => {
           whatsapp_number: whatsappClean,
           whatsapp_link: whatsappClean ? `https://wa.me/${whatsappClean}` : null,
           payment_methods: form.payment_methods,
+          slug: cleanSlug,
         })
         .eq("id", professional.id);
       if (error) throw error;
