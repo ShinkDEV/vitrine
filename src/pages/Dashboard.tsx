@@ -1,11 +1,12 @@
 import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle, Edit, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
+import { CheckCircle2, Circle, Edit, ExternalLink, Send } from "lucide-react";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
