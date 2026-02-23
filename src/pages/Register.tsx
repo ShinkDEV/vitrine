@@ -28,27 +28,12 @@ const Register = () => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: window.location.origin },
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: { name },
+        },
       });
       if (error) throw error;
-
-      if (data.user) {
-        // Create professional profile
-        const slug = name.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-");
-        const { error: proError } = await supabase.from("professionals").insert({
-          user_id: data.user.id,
-          name,
-          slug: slug + "-" + Date.now().toString(36),
-          status: "rascunho",
-        });
-        if (proError) console.error("Error creating professional:", proError);
-
-        // Assign role
-        await supabase.from("user_roles").insert({
-          user_id: data.user.id,
-          role: "professional" as const,
-        });
-      }
 
       // Send welcome email (fire and forget)
       supabase.functions.invoke("send-welcome-email", {
