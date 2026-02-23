@@ -253,6 +253,27 @@ const Admin = () => {
           )}
         </div>
       </div>
+
+      {/* Rejection reason dialog */}
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Motivo da rejeição</DialogTitle>
+          </DialogHeader>
+          <Textarea
+            placeholder="Informe o motivo da rejeição para o profissional..."
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            rows={4}
+          />
+          <div className="flex gap-3 justify-end">
+            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={confirmReject} disabled={updateStatus.isPending}>
+              {updateStatus.isPending ? "Rejeitando..." : "Confirmar rejeição"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
