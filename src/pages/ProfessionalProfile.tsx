@@ -108,11 +108,19 @@ const ProfessionalProfile = () => {
             {professional.city} / {professional.state}
           </p>
           {(professional.address_street || professional.address_neighborhood) && (
-            <p className="text-sm text-muted-foreground">
+            <button
+              onClick={() => {
+                const addr = [professional.address_street, professional.address_number, professional.address_neighborhood, professional.city, professional.state].filter(Boolean).join(", ");
+                navigator.clipboard.writeText(addr);
+                toast.success("Endereço copiado!");
+              }}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 mt-0.5"
+            >
               {[professional.address_street, professional.address_number, professional.address_neighborhood]
                 .filter(Boolean)
                 .join(", ")}
-            </p>
+              <Copy className="h-3 w-3 ml-1" />
+            </button>
           )}
           <Button variant="whatsapp" size="lg" className="mt-6 w-full sm:w-auto" asChild>
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
