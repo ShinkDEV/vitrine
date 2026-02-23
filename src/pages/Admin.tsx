@@ -289,6 +289,13 @@ const Admin = () => {
                           Aguardando envio
                         </span>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => { setSealProId(pro.id); setSealDialogOpen(true); }}
+                      >
+                        <Award className="h-4 w-4" />
+                      </Button>
                       {pro.slug && (
                         <Button
                           size="sm"
