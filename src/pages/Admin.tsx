@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, Eye, Pause, Play, Clock } from "lucide-react";
 
@@ -20,30 +22,33 @@ const Admin = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<string>("pendente");
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
 
   // Check if user is admin
-  const { data: isAdmin, isLoading: roleLoading } = useQuery({
-    queryKey: ["is-admin", user?.id],
+  const { data: hasAccess, isLoading: roleLoading } = useQuery({
+    queryKey: ["is-admin-or-colaborador", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user!.id)
-        .eq("role", "admin")
-        .maybeSingle();
+        .in("role", ["admin", "colaborador"]);
       if (error) throw error;
-      return !!data;
+      return (data?.length ?? 0) > 0;
     },
     enabled: !!user,
   });
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
-    if (!authLoading && !roleLoading && user && isAdmin === false) {
+    if (!authLoading && !roleLoading && user && hasAccess === false) {
       toast.error("Acesso negado.");
       navigate("/dashboard");
     }
-  }, [user, authLoading, isAdmin, roleLoading, navigate]);
+  }, [user, authLoading, hasAccess, roleLoading, navigate]);
+  
 
   // Fetch professionals
   const { data: professionals, isLoading } = useQuery({
@@ -62,14 +67,17 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!isAdmin,
+    enabled: !!hasAccess,
   });
 
   const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({ id, status, reason }: { id: string; status: string; reason?: string }) => {
+      const updateData: Record<string, any> = { status };
+      if (reason !== undefined) updateData.rejection_reason = reason;
+      if (status === "publicado") updateData.rejection_reason = null;
       const { error } = await supabase
         .from("professionals")
-        .update({ status })
+        .update(updateData)
         .eq("id", id);
       if (error) throw error;
     },
@@ -80,7 +88,23 @@ const Admin = () => {
     onError: (err: any) => toast.error(err.message || "Erro ao atualizar."),
   });
 
-  if (authLoading || roleLoading || !isAdmin) return null;
+  if (authLoading || roleLoading || !hasAccess) return null;
+
+  const handleReject = (id: string) => {
+    setRejectingId(id);
+    setRejectionReason("");
+    setRejectDialogOpen(true);
+  };
+
+  const confirmReject = () => {
+    if (!rejectingId || !rejectionReason.trim()) {
+      toast.error("Informe o motivo da rejeição.");
+      return;
+    }
+    updateStatus.mutate({ id: rejectingId, status: "rascunho", reason: rejectionReason.trim() });
+    setRejectDialogOpen(false);
+    setRejectingId(null);
+  };
 
   const filters = [
     { value: "pendente", label: "Pendentes" },
@@ -176,7 +200,7 @@ const Admin = () => {
                             size="sm"
                             variant="outline"
                             className="text-red-600 border-red-200 hover:bg-red-50"
-                            onClick={() => updateStatus.mutate({ id: pro.id, status: "rascunho" })}
+                            onClick={() => handleReject(pro.id)}
                             disabled={updateStatus.isPending}
                           >
                             <XCircle className="h-4 w-4 mr-1" />
@@ -229,6 +253,27 @@ const Admin = () => {
           )}
         </div>
       </div>
+
+      {/* Rejection reason dialog */}
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Motivo da rejeição</DialogTitle>
+          </DialogHeader>
+          <Textarea
+            placeholder="Informe o motivo da rejeição para o profissional..."
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            rows={4}
+          />
+          <div className="flex gap-3 justify-end">
+            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={confirmReject} disabled={updateStatus.isPending}>
+              {updateStatus.isPending ? "Rejeitando..." : "Confirmar rejeição"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

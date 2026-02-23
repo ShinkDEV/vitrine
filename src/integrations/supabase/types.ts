@@ -60,6 +60,7 @@ export type Database = {
           name: string
           payment_methods: string[] | null
           profile_photo_url: string | null
+          rejection_reason: string | null
           slug: string
           state: string | null
           status: string
@@ -81,6 +82,7 @@ export type Database = {
           name: string
           payment_methods?: string[] | null
           profile_photo_url?: string | null
+          rejection_reason?: string | null
           slug: string
           state?: string | null
           status?: string
@@ -102,6 +104,7 @@ export type Database = {
           name?: string
           payment_methods?: string[] | null
           profile_photo_url?: string | null
+          rejection_reason?: string | null
           slug?: string
           state?: string | null
           status?: string
