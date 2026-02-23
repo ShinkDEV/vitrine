@@ -122,6 +122,35 @@ const EditProfile = () => {
     onError: (err: any) => toast.error(err.message || "Erro ao salvar."),
   });
 
+  const uploadToR2 = async (file: File, path: string): Promise<string> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error("Não autenticado");
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("path", path);
+
+    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+    const res = await fetch(
+      `https://${projectId}.supabase.co/functions/v1/upload-to-r2`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: formData,
+      }
+    );
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Erro no upload");
+    }
+
+    const data = await res.json();
+    return data.url;
+  };
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !professional) return;
@@ -129,9 +158,7 @@ const EditProfile = () => {
     try {
       const ext = file.name.split(".").pop();
       const path = `${professional.id}/profile.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("professional-photos").upload(path, file, { upsert: true });
-      if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from("professional-photos").getPublicUrl(path);
+      const publicUrl = await uploadToR2(file, path);
       await supabase.from("professionals").update({ profile_photo_url: publicUrl }).eq("id", professional.id);
       toast.success("Foto de perfil atualizada!");
       queryClient.invalidateQueries({ queryKey: ["my-professional-edit"] });
@@ -156,9 +183,7 @@ const EditProfile = () => {
         const file = files[i];
         const ext = file.name.split(".").pop();
         const path = `${professional.id}/portfolio-${Date.now()}-${i}.${ext}`;
-        const { error: uploadError } = await supabase.storage.from("professional-photos").upload(path, file);
-        if (uploadError) throw uploadError;
-        const { data: { publicUrl } } = supabase.storage.from("professional-photos").getPublicUrl(path);
+        const publicUrl = await uploadToR2(file, path);
         await supabase.from("portfolio_photos").insert({
           professional_id: professional.id,
           photo_url: publicUrl,
