@@ -149,6 +149,21 @@ const EditProfile = () => {
         );
         if (sError) throw sError;
       }
+
+      // Save working hours
+      await supabase.from("working_hours").delete().eq("professional_id", professional.id);
+      const enabledHours = workingHours.filter((h) => h.enabled);
+      if (enabledHours.length > 0) {
+        const { error: whError } = await supabase.from("working_hours").insert(
+          enabledHours.map((h) => ({
+            professional_id: professional.id,
+            day_of_week: h.day,
+            open_time: h.open,
+            close_time: h.close,
+          }))
+        );
+        if (whError) throw whError;
+      }
     },
     onSuccess: () => {
       toast.success("Perfil atualizado com sucesso.");
