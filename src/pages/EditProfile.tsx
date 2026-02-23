@@ -98,6 +98,19 @@ const EditProfile = () => {
     }
   }, [professional]);
 
+  useEffect(() => {
+    if (existingHours) {
+      setWorkingHours(
+        Array.from({ length: 7 }, (_, i) => {
+          const found = existingHours.find((h) => h.day_of_week === i);
+          return found
+            ? { day: i, enabled: true, open: found.open_time.slice(0, 5), close: found.close_time.slice(0, 5) }
+            : { day: i, enabled: false, open: "09:00", close: "18:00" };
+        })
+      );
+    }
+  }, [existingHours]);
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (!professional) return;
