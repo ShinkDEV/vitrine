@@ -285,6 +285,12 @@ const ProfessionalProfile = () => {
             </div>
           </div>
         )}
+
+        {/* Member since */}
+        <div className="text-center text-xs text-muted-foreground py-2 animate-fade-in" style={{ animationDelay: "0.5s" }}>
+          <CalendarDays className="h-3.5 w-3.5 inline mr-1" />
+          Membro desde {new Date(professional.created_at).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
+        </div>
       </div>
 
       {/* Photo Modal */}
