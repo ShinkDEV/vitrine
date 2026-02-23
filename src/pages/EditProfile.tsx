@@ -474,6 +474,17 @@ const EditProfile = () => {
           onCropComplete={handleCropComplete}
         />
       )}
+      {portfolioCropImage && (
+        <PortfolioCropDialog
+          open={!!portfolioCropImage}
+          imageSrc={portfolioCropImage}
+          onClose={() => {
+            setPortfolioCropImage(null);
+            setPendingPortfolioFiles([]);
+          }}
+          onCropComplete={handlePortfolioCropComplete}
+        />
+      )}
     </div>
   );
 };
