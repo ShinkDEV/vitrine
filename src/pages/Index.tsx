@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import SearchFilters from "@/components/SearchFilters";
 import ProfessionalCard from "@/components/ProfessionalCard";
+import Footer from "@/components/Footer";
 import { Sparkles, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -91,12 +92,7 @@ const Index = () => {
         )}
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Vitrine dos Especialistas da Beleza. Todos os direitos reservados.
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
