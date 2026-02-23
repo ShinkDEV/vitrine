@@ -17,8 +17,7 @@ const ProfessionalProfile = () => {
         .from("professionals")
         .select("*, services(*), portfolio_photos(*)")
         .eq("slug", slug!)
-        .eq("status", "publicado")
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
