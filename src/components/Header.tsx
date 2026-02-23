@@ -1,11 +1,27 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, LayoutDashboard } from "lucide-react";
+import { User, LogOut, LayoutDashboard, Shield } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const Header = () => {
   const { user, signOut } = useAuth();
+
+  const { data: hasAdminAccess } = useQuery({
+    queryKey: ["header-admin-access", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user!.id)
+        .in("role", ["admin", "colaborador"]);
+      if (error) throw error;
+      return (data?.length ?? 0) > 0;
+    },
+    enabled: !!user,
+  });
 
   return (
     <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b border-border">
@@ -17,6 +33,14 @@ const Header = () => {
         <nav className="flex items-center gap-3">
           {user ? (
             <>
+              {hasAdminAccess && (
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/admin">
+                    <Shield className="h-4 w-4 mr-1" />
+                    Admin
+                  </Link>
+                </Button>
+              )}
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/dashboard">
                   <LayoutDashboard className="h-4 w-4 mr-1" />
