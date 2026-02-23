@@ -334,6 +334,35 @@ const Admin = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Seal management dialog */}
+      <Dialog open={sealDialogOpen} onOpenChange={(v) => { setSealDialogOpen(v); if (!v) setSealProId(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Gerenciar Selos</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {allSeals?.map((seal) => {
+              const isAssigned = assignedSeals?.includes(seal.id) ?? false;
+              return (
+                <label key={seal.id} className="flex items-center gap-3 cursor-pointer">
+                  <Checkbox
+                    checked={isAssigned}
+                    onCheckedChange={(checked) => {
+                      if (sealProId) {
+                        toggleSeal.mutate({ proId: sealProId, sealId: seal.id, assign: !!checked });
+                      }
+                    }}
+                    disabled={toggleSeal.isPending}
+                  />
+                  <span className="text-lg">{seal.icon}</span>
+                  <span className="text-sm text-foreground">{seal.name}</span>
+                </label>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
