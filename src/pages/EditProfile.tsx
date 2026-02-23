@@ -76,7 +76,7 @@ const EditProfile = () => {
           id: s.id,
           title: s.title,
           price: s.price ? String(s.price) : "",
-          duration: s.duration_minutes ? String(s.duration_minutes) : "",
+          priceOnRequest: s.price === null || s.price === undefined,
         })) || []
       );
     }
