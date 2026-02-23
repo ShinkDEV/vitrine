@@ -10,6 +10,7 @@ import { toast } from "sonner";
 const ProfessionalProfile = () => {
   const { slug } = useParams<{ slug: string }>();
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
   const { data: professional, isLoading } = useQuery({
     queryKey: ["professional", slug],
