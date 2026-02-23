@@ -435,6 +435,14 @@ const EditProfile = () => {
           </form>
         </div>
       </div>
+      {cropImage && (
+        <ProfileCropDialog
+          open={!!cropImage}
+          imageSrc={cropImage}
+          onClose={() => setCropImage(null)}
+          onCropComplete={handleCropComplete}
+        />
+      )}
     </div>
   );
 };
