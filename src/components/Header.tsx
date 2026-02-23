@@ -57,12 +57,6 @@ const Header = () => {
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/login">Entrar</Link>
               </Button>
-              <Button variant="gradient" size="sm" asChild>
-                <Link to="/cadastro">
-                  <User className="h-4 w-4 mr-1" />
-                  Cadastrar
-                </Link>
-              </Button>
             </>
           )}
         </nav>
