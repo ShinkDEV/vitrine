@@ -153,14 +153,22 @@ const EditProfile = () => {
     return data.url;
   };
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !professional) return;
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCropImage(reader.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleCropComplete = async (blob: Blob) => {
+    setCropImage(null);
+    if (!professional) return;
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${professional.id}/profile.${ext}`;
-      const publicUrl = await uploadToR2(file, path);
+      const path = `${professional.id}/profile.jpg`;
+      const publicUrl = await uploadToR2(new File([blob], "profile.jpg", { type: "image/jpeg" }), path);
       await supabase.from("professionals").update({ profile_photo_url: publicUrl }).eq("id", professional.id);
       toast.success("Foto de perfil atualizada!");
       queryClient.invalidateQueries({ queryKey: ["my-professional-edit"] });
