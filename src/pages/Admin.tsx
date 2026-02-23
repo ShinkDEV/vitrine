@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award } from "lucide-react";
+import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, DollarSign, CreditCard, MessageCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   rascunho: { label: "Rascunho", color: "bg-muted text-muted-foreground" },
@@ -28,6 +29,7 @@ const Admin = () => {
   const [rejectionReason, setRejectionReason] = useState("");
   const [sealDialogOpen, setSealDialogOpen] = useState(false);
   const [sealProId, setSealProId] = useState<string | null>(null);
+  const [previewPro, setPreviewPro] = useState<any | null>(null);
 
   // Check if user is admin
   const { data: hasAccess, isLoading: roleLoading } = useQuery({
@@ -296,15 +298,13 @@ const Admin = () => {
                       >
                         <Award className="h-4 w-4" />
                       </Button>
-                      {pro.slug && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => window.open(`/p/${pro.slug}`, "_blank")}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setPreviewPro(pro)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 );
@@ -361,6 +361,157 @@ const Admin = () => {
               );
             })}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Professional Preview Dialog */}
+      <Dialog open={!!previewPro} onOpenChange={(v) => { if (!v) setPreviewPro(null); }}>
+        <DialogContent className="max-w-lg max-h-[90vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Pré-visualização do Perfil
+            </DialogTitle>
+            <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-lg px-3 py-2 text-xs font-medium mt-2">
+              ⚠️ Este perfil ainda NÃO está publicado — Status: {STATUS_LABELS[previewPro?.status]?.label || previewPro?.status}
+            </div>
+          </DialogHeader>
+          {previewPro && (
+            <ScrollArea className="max-h-[70vh] px-6 pb-6">
+              <div className="space-y-5 pt-4">
+                {/* Photo + Name */}
+                <div className="flex items-center gap-4">
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-border flex-shrink-0">
+                    {previewPro.profile_photo_url ? (
+                      <img src={previewPro.profile_photo_url} alt={previewPro.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground font-display text-2xl">
+                        {previewPro.name.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-display font-bold text-foreground">{previewPro.name}</h3>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <MapPin className="h-3.5 w-3.5" />
+                      {previewPro.city || "—"} / {previewPro.state || "—"}
+                    </p>
+                    {(previewPro.address_street || previewPro.address_neighborhood) && (
+                      <p className="text-xs text-muted-foreground">
+                        {[previewPro.address_street, previewPro.address_number, previewPro.address_neighborhood].filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* WhatsApp */}
+                {previewPro.whatsapp_number && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MessageCircle className="h-4 w-4" />
+                    <span>WhatsApp: {previewPro.whatsapp_number}</span>
+                  </div>
+                )}
+
+                {/* Bio */}
+                {previewPro.bio && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-1">Sobre</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{previewPro.bio}</p>
+                  </div>
+                )}
+
+                {/* Services */}
+                {previewPro.services && previewPro.services.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-2">Serviços ({previewPro.services.length})</h4>
+                    <div className="space-y-1.5">
+                      {previewPro.services
+                        .sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0))
+                        .map((s: any) => (
+                          <div key={s.id} className="flex justify-between text-sm border-b border-border pb-1.5 last:border-0">
+                            <span className="text-foreground">{s.title}</span>
+                            <div className="flex gap-3 text-muted-foreground text-xs">
+                              {s.price && (
+                                <span className="flex items-center gap-0.5">
+                                  <DollarSign className="h-3 w-3" />
+                                  R$ {Number(s.price).toFixed(2)}
+                                </span>
+                              )}
+                              {s.duration_minutes && (
+                                <span className="flex items-center gap-0.5">
+                                  <Clock className="h-3 w-3" />
+                                  {s.duration_minutes} min
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Payment Methods */}
+                {previewPro.payment_methods && previewPro.payment_methods.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-2">Formas de pagamento</h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {previewPro.payment_methods.map((m: string) => (
+                        <span key={m} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-accent text-accent-foreground text-xs">
+                          <CreditCard className="h-3 w-3" />
+                          {m}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Portfolio Photos */}
+                {previewPro.portfolio_photos && previewPro.portfolio_photos.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-2">Portfólio ({previewPro.portfolio_photos.length} fotos)</h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      {previewPro.portfolio_photos
+                        .sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0))
+                        .map((p: any) => (
+                          <div key={p.id} className="aspect-square rounded-lg overflow-hidden">
+                            <img src={p.photo_url} alt="Portfólio" className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Admin actions */}
+                {previewPro.status === "pendente" && (
+                  <div className="flex gap-2 pt-2 border-t border-border">
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => {
+                        updateStatus.mutate({ id: previewPro.id, status: "publicado" });
+                        setPreviewPro(null);
+                      }}
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-1" />
+                      Aprovar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="flex-1"
+                      onClick={() => {
+                        setPreviewPro(null);
+                        handleReject(previewPro.id);
+                      }}
+                    >
+                      <XCircle className="h-4 w-4 mr-1" />
+                      Rejeitar
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          )}
         </DialogContent>
       </Dialog>
     </div>
