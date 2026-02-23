@@ -84,7 +84,13 @@ const ProfessionalProfile = () => {
       <Header />
 
       <div className="container mx-auto px-4 py-8 max-w-2xl space-y-6">
-        {/* Profile Header */}
+        {/* Pre-visualization banner for non-published profiles */}
+        {professional.status !== "publicado" && (
+          <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-xl px-5 py-3 text-sm font-medium flex items-center gap-2 animate-fade-in">
+            <span className="text-lg">👁️</span>
+            Pré-visualização — Este perfil ainda não está publicado.
+          </div>
+        )}
         <div className="bg-card rounded-2xl shadow-card p-8 text-center animate-fade-in">
           <div className="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4 border-4 border-primary/20">
             {professional.profile_photo_url ? (
