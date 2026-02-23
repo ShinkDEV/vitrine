@@ -73,6 +73,56 @@ const Admin = () => {
     enabled: !!hasAccess,
   });
 
+  // Fetch all seals
+  const { data: allSeals } = useQuery({
+    queryKey: ["all-seals"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("seals").select("*").order("name");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!hasAccess,
+  });
+
+  // Fetch assigned seals for the selected professional
+  const { data: assignedSeals } = useQuery({
+    queryKey: ["professional-seals-admin", sealProId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("professional_seals")
+        .select("seal_id")
+        .eq("professional_id", sealProId!);
+      if (error) throw error;
+      return data?.map((s) => s.seal_id) ?? [];
+    },
+    enabled: !!sealProId,
+  });
+
+  const toggleSeal = useMutation({
+    mutationFn: async ({ proId, sealId, assign }: { proId: string; sealId: string; assign: boolean }) => {
+      if (assign) {
+        const { error } = await supabase.from("professional_seals").insert({
+          professional_id: proId,
+          seal_id: sealId,
+          assigned_by: user!.id,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("professional_seals")
+          .delete()
+          .eq("professional_id", proId)
+          .eq("seal_id", sealId);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["professional-seals-admin", sealProId] });
+      toast.success("Selo atualizado!");
+    },
+    onError: (err: any) => toast.error(err.message || "Erro ao atualizar selo."),
+  });
+
   const updateStatus = useMutation({
     mutationFn: async ({ id, status, reason }: { id: string; status: string; reason?: string }) => {
       const updateData: Record<string, any> = { status };
