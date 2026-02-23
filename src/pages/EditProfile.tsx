@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Plus, Trash2, Upload } from "lucide-react";
+import { Plus, Trash2, Upload, ArrowLeft } from "lucide-react";
 import ProfileCropDialog from "@/components/ProfileCropDialog";
 import PortfolioCropDialog from "@/components/PortfolioCropDialog";
 
@@ -258,6 +258,10 @@ const EditProfile = () => {
       <Header />
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="bg-card rounded-2xl shadow-card p-8 animate-fade-in">
+          <Button variant="ghost" size="sm" className="mb-4 -ml-2" onClick={() => navigate("/dashboard")}>
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Voltar
+          </Button>
           <h1 className="text-2xl font-display font-bold text-foreground mb-1">
             Edite suas informações profissionais
           </h1>
