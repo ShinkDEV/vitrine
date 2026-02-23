@@ -298,15 +298,13 @@ const Admin = () => {
                       >
                         <Award className="h-4 w-4" />
                       </Button>
-                      {pro.slug && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => window.open(`/p/${pro.slug}`, "_blank")}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setPreviewPro(pro)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 );
