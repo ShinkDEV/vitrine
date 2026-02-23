@@ -50,6 +50,11 @@ const Register = () => {
         });
       }
 
+      // Send welcome email (fire and forget)
+      supabase.functions.invoke("send-welcome-email", {
+        body: { name, email },
+      }).catch((err) => console.error("Welcome email error:", err));
+
       toast.success("Conta criada! Verifique seu email para confirmar.");
       navigate("/login");
     } catch (err: any) {
