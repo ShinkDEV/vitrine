@@ -25,6 +25,19 @@ const ProfessionalProfile = () => {
     enabled: !!slug,
   });
 
+  const { data: seals } = useQuery({
+    queryKey: ["professional-seals", professional?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("professional_seals")
+        .select("*, seal:seals(*)")
+        .eq("professional_id", professional!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!professional?.id,
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -101,6 +114,47 @@ const ProfessionalProfile = () => {
               Agendar no WhatsApp
             </a>
           </Button>
+        </div>
+
+        {/* Certification Badge */}
+        <div className="bg-card rounded-2xl shadow-card p-6 animate-fade-in" style={{ animationDelay: "0.05s" }}>
+          <div className="flex items-start gap-3">
+            <span className="text-3xl">🎓</span>
+            <div>
+              <h2 className="text-lg font-display font-semibold text-foreground">
+                Especialista Formado pela Escola Rô Siqueira
+              </h2>
+              <div className="mt-2 space-y-1">
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <span className="text-primary">✔</span> Formado(a) oficialmente
+                </p>
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <span className="text-primary">✔</span> Método validado
+                </p>
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <span className="text-primary">✔</span> Profissional recomendado
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Seals */}
+          {seals && seals.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-sm font-medium text-foreground mb-2">Selos</p>
+              <div className="flex flex-wrap gap-2">
+                {seals.map((ps: any) => (
+                  <span
+                    key={ps.id}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent text-accent-foreground text-sm font-medium"
+                  >
+                    <span>{ps.seal?.icon}</span>
+                    {ps.seal?.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* About */}

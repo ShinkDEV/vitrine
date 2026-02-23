@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Eye, Pause, Play, Clock } from "lucide-react";
+import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   rascunho: { label: "Rascunho", color: "bg-muted text-muted-foreground" },
@@ -25,6 +26,8 @@ const Admin = () => {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [sealDialogOpen, setSealDialogOpen] = useState(false);
+  const [sealProId, setSealProId] = useState<string | null>(null);
 
   // Check if user is admin
   const { data: hasAccess, isLoading: roleLoading } = useQuery({
@@ -68,6 +71,56 @@ const Admin = () => {
       return data;
     },
     enabled: !!hasAccess,
+  });
+
+  // Fetch all seals
+  const { data: allSeals } = useQuery({
+    queryKey: ["all-seals"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("seals").select("*").order("name");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!hasAccess,
+  });
+
+  // Fetch assigned seals for the selected professional
+  const { data: assignedSeals } = useQuery({
+    queryKey: ["professional-seals-admin", sealProId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("professional_seals")
+        .select("seal_id")
+        .eq("professional_id", sealProId!);
+      if (error) throw error;
+      return data?.map((s) => s.seal_id) ?? [];
+    },
+    enabled: !!sealProId,
+  });
+
+  const toggleSeal = useMutation({
+    mutationFn: async ({ proId, sealId, assign }: { proId: string; sealId: string; assign: boolean }) => {
+      if (assign) {
+        const { error } = await supabase.from("professional_seals").insert({
+          professional_id: proId,
+          seal_id: sealId,
+          assigned_by: user!.id,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("professional_seals")
+          .delete()
+          .eq("professional_id", proId)
+          .eq("seal_id", sealId);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["professional-seals-admin", sealProId] });
+      toast.success("Selo atualizado!");
+    },
+    onError: (err: any) => toast.error(err.message || "Erro ao atualizar selo."),
   });
 
   const updateStatus = useMutation({
@@ -236,6 +289,13 @@ const Admin = () => {
                           Aguardando envio
                         </span>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => { setSealProId(pro.id); setSealDialogOpen(true); }}
+                      >
+                        <Award className="h-4 w-4" />
+                      </Button>
                       {pro.slug && (
                         <Button
                           size="sm"
@@ -271,6 +331,35 @@ const Admin = () => {
             <Button variant="destructive" onClick={confirmReject} disabled={updateStatus.isPending}>
               {updateStatus.isPending ? "Rejeitando..." : "Confirmar rejeição"}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Seal management dialog */}
+      <Dialog open={sealDialogOpen} onOpenChange={(v) => { setSealDialogOpen(v); if (!v) setSealProId(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Gerenciar Selos</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {allSeals?.map((seal) => {
+              const isAssigned = assignedSeals?.includes(seal.id) ?? false;
+              return (
+                <label key={seal.id} className="flex items-center gap-3 cursor-pointer">
+                  <Checkbox
+                    checked={isAssigned}
+                    onCheckedChange={(checked) => {
+                      if (sealProId) {
+                        toggleSeal.mutate({ proId: sealProId, sealId: seal.id, assign: !!checked });
+                      }
+                    }}
+                    disabled={toggleSeal.isPending}
+                  />
+                  <span className="text-lg">{seal.icon}</span>
+                  <span className="text-sm text-foreground">{seal.name}</span>
+                </label>
+              );
+            })}
           </div>
         </DialogContent>
       </Dialog>
