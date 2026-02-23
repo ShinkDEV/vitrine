@@ -14,6 +14,7 @@ import EditProfile from "./pages/EditProfile";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import TermsOfUse from "./pages/TermsOfUse";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
                 <Route path="/editar-perfil" element={<EditProfile />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/termos-de-uso" element={<TermsOfUse />} />
+                <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
