@@ -48,7 +48,7 @@ const Admin = () => {
       navigate("/dashboard");
     }
   }, [user, authLoading, hasAccess, roleLoading, navigate]);
-  }, [user, authLoading, isAdmin, roleLoading, navigate]);
+  
 
   // Fetch professionals
   const { data: professionals, isLoading } = useQuery({
