@@ -255,6 +255,41 @@ export type Database = {
         }
         Relationships: []
       }
+      working_hours: {
+        Row: {
+          close_time: string
+          created_at: string
+          day_of_week: number
+          id: string
+          open_time: string
+          professional_id: string
+        }
+        Insert: {
+          close_time: string
+          created_at?: string
+          day_of_week: number
+          id?: string
+          open_time: string
+          professional_id: string
+        }
+        Update: {
+          close_time?: string
+          created_at?: string
+          day_of_week?: number
+          id?: string
+          open_time?: string
+          professional_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "working_hours_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
