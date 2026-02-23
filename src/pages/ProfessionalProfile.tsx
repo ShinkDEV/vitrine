@@ -3,8 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { MapPin, Clock, DollarSign, CreditCard, X } from "lucide-react";
+import { MapPin, Clock, DollarSign, CreditCard, X, Copy, Check } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const ProfessionalProfile = () => {
   const { slug } = useParams<{ slug: string }>();
