@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import SearchFilters from "@/components/SearchFilters";
 import ProfessionalCard from "@/components/ProfessionalCard";
+import Footer from "@/components/Footer";
 import { Sparkles, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
