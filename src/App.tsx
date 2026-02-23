@@ -14,6 +14,7 @@ import EditProfile from "./pages/EditProfile";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import TermsOfUse from "./pages/TermsOfUse";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 
