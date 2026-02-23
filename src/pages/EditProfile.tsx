@@ -467,6 +467,59 @@ const EditProfile = () => {
               </Button>
             </div>
 
+            {/* Working Hours */}
+            <div>
+              <h3 className="text-base font-display font-semibold text-foreground mb-3 flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Horários de atendimento
+              </h3>
+              <div className="space-y-2">
+                {["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"].map((dayName, i) => {
+                  const h = workingHours[i];
+                  return (
+                    <div key={i} className="flex items-center gap-3 py-1.5">
+                      <Checkbox
+                        checked={h.enabled}
+                        onCheckedChange={(checked) => {
+                          const updated = [...workingHours];
+                          updated[i] = { ...updated[i], enabled: !!checked };
+                          setWorkingHours(updated);
+                        }}
+                      />
+                      <span className="text-sm text-foreground w-20">{dayName}</span>
+                      {h.enabled ? (
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="time"
+                            value={h.open}
+                            onChange={(e) => {
+                              const updated = [...workingHours];
+                              updated[i] = { ...updated[i], open: e.target.value };
+                              setWorkingHours(updated);
+                            }}
+                            className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                          />
+                          <span className="text-sm text-muted-foreground">às</span>
+                          <input
+                            type="time"
+                            value={h.close}
+                            onChange={(e) => {
+                              const updated = [...workingHours];
+                              updated[i] = { ...updated[i], close: e.target.value };
+                              setWorkingHours(updated);
+                            }}
+                            className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Fechado</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Payment Methods */}
             <div>
               <h3 className="text-base font-display font-semibold text-foreground mb-3">Formas de pagamento</h3>
