@@ -113,8 +113,8 @@ const EditProfile = () => {
           services.map((s, i) => ({
             professional_id: professional.id,
             title: s.title,
-            price: s.price ? Number(s.price) : null,
-            duration_minutes: s.duration ? Number(s.duration) : null,
+            price: s.priceOnRequest ? null : (s.price ? Number(s.price) : null),
+            duration_minutes: null,
             order_index: i,
           }))
         );
