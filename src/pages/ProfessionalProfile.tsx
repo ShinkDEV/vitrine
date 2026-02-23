@@ -64,7 +64,7 @@ const ProfessionalProfile = () => {
   }
 
   const whatsappMessage = encodeURIComponent(
-    "Olá, vi seu perfil na Vitrine dos Especialistas da Beleza e gostaria de agendar um horário."
+    "Olá! Vim da Vitrine Rô Siqueira e gostaria de fazer um agendamento!"
   );
   const whatsappUrl = professional.whatsapp_number
     ? `https://wa.me/${professional.whatsapp_number.replace(/\D/g, "")}?text=${whatsappMessage}`
