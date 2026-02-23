@@ -363,6 +363,24 @@ const EditProfile = () => {
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </div>
               <div className="sm:col-span-2">
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Username (link do perfil)</label>
+                <div className="flex items-center gap-0">
+                  <span className="text-sm text-muted-foreground whitespace-nowrap bg-muted px-3 h-10 flex items-center rounded-l-lg border border-r-0 border-input">/p/</span>
+                  <Input
+                    value={form.slug}
+                    onChange={(e) => {
+                      const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+                      setForm({ ...form, slug: val });
+                      setSlugError("");
+                    }}
+                    className="rounded-l-none"
+                    placeholder="seu-username"
+                  />
+                </div>
+                {slugError && <p className="text-xs text-destructive mt-1">{slugError}</p>}
+                <p className="text-xs text-muted-foreground mt-1">Seu perfil ficará em: /p/{form.slug || "..."}</p>
+              </div>
+              <div className="sm:col-span-2">
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Bio (até 300 caracteres)</label>
                 <Textarea
                   value={form.bio}
