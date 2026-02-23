@@ -369,7 +369,7 @@ const EditProfile = () => {
                   <Input
                     value={form.slug}
                     onChange={(e) => {
-                      const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+                      const val = e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, "");
                       setForm({ ...form, slug: val });
                       setSlugError("");
                     }}
