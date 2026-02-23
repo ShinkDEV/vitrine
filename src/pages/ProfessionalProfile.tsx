@@ -146,7 +146,7 @@ const ProfessionalProfile = () => {
           {/* Seals */}
           {seals && seals.length > 0 && (
             <div className="mt-4 pt-4 border-t border-border">
-              <p className="text-sm font-medium text-foreground mb-2">Selos</p>
+              <p className="text-sm font-medium text-foreground mb-2">Formações</p>
               <div className="flex flex-wrap gap-4 justify-center">
                 {seals.map((ps: any) => (
                   <div key={ps.id} className="flex flex-col items-center gap-1">
