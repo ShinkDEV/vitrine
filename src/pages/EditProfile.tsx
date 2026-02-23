@@ -32,6 +32,9 @@ const EditProfile = () => {
   });
 
   const [services, setServices] = useState<{ id?: string; title: string; price: string; priceOnRequest: boolean }[]>([]);
+  const [workingHours, setWorkingHours] = useState<{ day: number; enabled: boolean; open: string; close: string }[]>(
+    Array.from({ length: 7 }, (_, i) => ({ day: i, enabled: false, open: "09:00", close: "18:00" }))
+  );
   const [uploading, setUploading] = useState(false);
   const [cropImage, setCropImage] = useState<string | null>(null);
   const [portfolioCropImage, setPortfolioCropImage] = useState<string | null>(null);
