@@ -169,7 +169,9 @@ const EditProfile = () => {
     try {
       const path = `${professional.id}/profile.jpg`;
       const publicUrl = await uploadToR2(new File([blob], "profile.jpg", { type: "image/jpeg" }), path);
-      await supabase.from("professionals").update({ profile_photo_url: publicUrl }).eq("id", professional.id);
+      // Append cache-buster so browser loads the new image
+      const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
+      await supabase.from("professionals").update({ profile_photo_url: urlWithCacheBust }).eq("id", professional.id);
       toast.success("Foto de perfil atualizada!");
       queryClient.invalidateQueries({ queryKey: ["my-professional-edit"] });
     } catch (err: any) {
