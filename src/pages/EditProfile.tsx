@@ -88,6 +88,7 @@ const EditProfile = () => {
         address_complement: professional.address_complement || "",
         whatsapp_number: professional.whatsapp_number || "",
         payment_methods: professional.payment_methods || [],
+        slug: professional.slug || "",
       });
       setServices(
         professional.services?.map((s) => ({
