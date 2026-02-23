@@ -114,6 +114,19 @@ const Dashboard = () => {
                 Editar perfil
               </Link>
             </Button>
+            {canSubmitForApproval && (
+              <Button
+                variant="outline"
+                onClick={() => submitForApproval.mutate()}
+                disabled={submitForApproval.isPending}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                {submitForApproval.isPending ? "Enviando..." : "Enviar para aprovação"}
+              </Button>
+            )}
+            {professional?.status === "pendente" && (
+              <p className="text-sm text-muted-foreground self-center">Seu perfil está aguardando aprovação do admin.</p>
+            )}
             {professional?.slug && professional.status === "publicado" && (
               <Button variant="outline" asChild>
                 <Link to={`/p/${professional.slug}`}>
