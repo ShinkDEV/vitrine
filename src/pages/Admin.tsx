@@ -88,7 +88,23 @@ const Admin = () => {
     onError: (err: any) => toast.error(err.message || "Erro ao atualizar."),
   });
 
-  if (authLoading || roleLoading || !isAdmin) return null;
+  if (authLoading || roleLoading || !hasAccess) return null;
+
+  const handleReject = (id: string) => {
+    setRejectingId(id);
+    setRejectionReason("");
+    setRejectDialogOpen(true);
+  };
+
+  const confirmReject = () => {
+    if (!rejectingId || !rejectionReason.trim()) {
+      toast.error("Informe o motivo da rejeição.");
+      return;
+    }
+    updateStatus.mutate({ id: rejectingId, status: "rascunho", reason: rejectionReason.trim() });
+    setRejectDialogOpen(false);
+    setRejectingId(null);
+  };
 
   const filters = [
     { value: "pendente", label: "Pendentes" },
