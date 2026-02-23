@@ -61,6 +61,17 @@ const Footer = () => {
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Vitrine Rô Siqueira. Todos os direitos reservados.
           </p>
+          <p className="text-xs text-muted-foreground">
+            Developed by:{" "}
+            <a
+              href="https://instagram.com/eduardofelyx"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors underline"
+            >
+              @EduardoFelyx
+            </a>
+          </p>
         </div>
       </div>
     </footer>
