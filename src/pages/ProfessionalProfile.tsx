@@ -96,7 +96,7 @@ const ProfessionalProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-8">
+    <div className="min-h-screen bg-background pb-24">
       <Header />
 
       <div className="container mx-auto px-4 py-8 max-w-2xl space-y-6">
