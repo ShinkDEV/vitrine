@@ -67,7 +67,7 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!isAdmin,
+    enabled: !!hasAccess,
   });
 
   const updateStatus = useMutation({
