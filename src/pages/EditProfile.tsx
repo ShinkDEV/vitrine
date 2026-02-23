@@ -119,7 +119,7 @@ const EditProfile = () => {
       if (!professional) return;
 
       // Validate slug
-      const cleanSlug = form.slug.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-").replace(/^-|-$/g, "");
+      const cleanSlug = form.slug.toLowerCase().replace(/[^a-z0-9._-]/g, "").replace(/[-_.]{2,}/g, (m) => m[0]).replace(/^[-_.]|[-_.]$/g, "");
       if (!cleanSlug) throw new Error("Username é obrigatório.");
       if (cleanSlug !== professional.slug) {
         const { data: existing } = await supabase
