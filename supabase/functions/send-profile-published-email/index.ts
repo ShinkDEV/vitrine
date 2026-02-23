@@ -4,6 +4,48 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const emailWrapper = (content: string) => `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#fdf6f9;font-family:'Segoe UI',Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#fdf6f9;padding:40px 16px;">
+    <tr><td align="center">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px -4px rgba(180,60,120,0.1);">
+        <tr>
+          <td style="background:linear-gradient(135deg,#b8396b,#8b2560);padding:32px 40px;text-align:center;">
+            <h2 style="margin:0;color:#ffffff;font-size:20px;font-weight:700;letter-spacing:0.5px;">
+              ✨ Vitrine dos Especialistas da Beleza
+            </h2>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:40px;">
+            ${content}
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color:#fdf0f5;padding:24px 40px;text-align:center;border-top:1px solid #f0d4e2;">
+            <p style="margin:0;color:#a3738e;font-size:13px;line-height:1.5;">
+              Vitrine dos Especialistas da Beleza<br/>
+              Este e-mail foi enviado automaticamente. Não responda a esta mensagem.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
+`;
+
+const brandButton = (text: string, url: string) =>
+  `<div style="text-align:center;margin:32px 0;">
+    <a href="${url}" style="display:inline-block;background:linear-gradient(135deg,#b8396b,#8b2560);color:#ffffff;padding:14px 36px;border-radius:12px;text-decoration:none;font-weight:600;font-size:16px;box-shadow:0 4px 14px -4px rgba(180,60,120,0.35);">
+      ${text}
+    </a>
+  </div>`;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -29,6 +71,24 @@ Deno.serve(async (req) => {
 
     const profileUrl = `https://kind-logic.lovable.app/profissional/${slug}`;
 
+    const html = emailWrapper(`
+      <h1 style="margin:0 0 16px;color:#8b2560;font-size:24px;font-weight:700;">
+        Parabéns, ${name}! 🎉
+      </h1>
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 12px;">
+        Seu perfil na <strong style="color:#b8396b;">Vitrine dos Especialistas da Beleza</strong> foi aprovado e já está publicado!
+      </p>
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 8px;">
+        Clientes da sua região já podem encontrar você. Compartilhe seu perfil nas redes sociais para atrair ainda mais clientes.
+      </p>
+      ${brandButton("Ver meu perfil", profileUrl)}
+      <div style="background:#fdf0f5;border-radius:12px;padding:16px 20px;margin-top:8px;">
+        <p style="margin:0;color:#8b2560;font-size:14px;line-height:1.5;">
+          💡 <strong>Dica:</strong> Mantenha seu perfil atualizado com fotos recentes e serviços atuais para conquistar mais clientes!
+        </p>
+      </div>
+    `);
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -38,26 +98,8 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         from: "avisos@vitrine.escola.ro",
         to: [email],
-        subject: "Seu perfil foi publicado! 🎉",
-        html: `
-          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; background: #fdf8f4; border-radius: 16px;">
-            <h1 style="color: #7c3aed; font-size: 24px; margin-bottom: 16px;">Parabéns, ${name}! 🎉</h1>
-            <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-              Seu perfil na <strong>Vitrine dos Especialistas da Beleza</strong> foi aprovado e já está publicado!
-            </p>
-            <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-              Clientes da sua região já podem encontrar você. Compartilhe seu perfil nas redes sociais para atrair ainda mais clientes.
-            </p>
-            <div style="text-align: center; margin: 32px 0;">
-              <a href="${profileUrl}" style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">
-                Ver meu perfil
-              </a>
-            </div>
-            <p style="color: #6b7280; font-size: 14px;">
-              Mantenha seu perfil atualizado para conquistar mais clientes!
-            </p>
-          </div>
-        `,
+        subject: "Seu perfil foi publicado! 🎉✨",
+        html,
       }),
     });
 
