@@ -123,6 +123,7 @@ const EditProfile = () => {
     },
     onSuccess: () => {
       toast.success("Perfil atualizado com sucesso.");
+      queryClient.invalidateQueries({ queryKey: ["my-professional-edit"] });
       queryClient.invalidateQueries({ queryKey: ["my-professional"] });
     },
     onError: (err: any) => toast.error(err.message || "Erro ao salvar."),
