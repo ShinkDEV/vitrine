@@ -31,20 +31,6 @@ const Dashboard = () => {
     enabled: !!user,
   });
 
-  if (authLoading || !user) return null;
-
-  const checks = [
-    { label: "Foto de perfil", done: !!professional?.profile_photo_url },
-    { label: "Cidade e Estado", done: !!professional?.city && !!professional?.state },
-    { label: "Pelo menos 1 serviço", done: (professional?.services?.length ?? 0) >= 1 },
-    { label: "WhatsApp configurado", done: !!professional?.whatsapp_number },
-    { label: "Portfólio com no mínimo 3 fotos", done: (professional?.portfolio_photos?.length ?? 0) >= 3 },
-  ];
-  const completedCount = checks.filter((c) => c.done).length;
-  const completionPercent = Math.round((completedCount / checks.length) * 100);
-  const isComplete = completionPercent === 100;
-  const canSubmitForApproval = isComplete && professional?.status === "rascunho";
-
   const submitForApproval = useMutation({
     mutationFn: async () => {
       if (!professional) return;
@@ -60,6 +46,8 @@ const Dashboard = () => {
     },
     onError: (err: any) => toast.error(err.message || "Erro ao enviar para aprovação."),
   });
+
+  if (authLoading || !user) return null;
   return (
     <div className="min-h-screen bg-background">
       <Header />
