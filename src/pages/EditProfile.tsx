@@ -549,17 +549,34 @@ const EditProfile = () => {
                 Portfólio ({professional?.portfolio_photos?.length ?? 0}/10 fotos)
               </h3>
               {professional?.portfolio_photos && professional.portfolio_photos.length > 0 && (
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-3">
-                  {professional.portfolio_photos.map((photo) => (
-                    <div key={photo.id} className="relative aspect-square rounded-lg overflow-hidden group">
-                      <img src={photo.photo_url} alt="Portfolio" className="w-full h-full object-cover" />
-                      <button
+                <div className="space-y-3 mb-3">
+                  {professional.portfolio_photos
+                    .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
+                    .map((photo) => (
+                    <div key={photo.id} className="flex items-center gap-3 p-2 rounded-lg border border-border">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                        <img src={photo.photo_url} alt="Portfolio" className="w-full h-full object-cover" />
+                      </div>
+                      <Input
+                        placeholder="Título da foto (opcional)"
+                        defaultValue={photo.title || ""}
+                        onBlur={async (e) => {
+                          const newTitle = e.target.value.trim();
+                          if (newTitle !== (photo.title || "")) {
+                            await supabase.from("portfolio_photos").update({ title: newTitle || null }).eq("id", photo.id);
+                            queryClient.invalidateQueries({ queryKey: ["my-professional-edit"] });
+                          }
+                        }}
+                        className="flex-1 text-sm"
+                      />
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon"
                         onClick={() => deletePortfolioPhoto(photo.id)}
-                        className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                       >
-                        <Trash2 className="h-5 w-5 text-card" />
-                      </button>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))}
                 </div>
