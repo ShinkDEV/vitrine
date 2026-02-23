@@ -38,6 +38,20 @@ const ProfessionalProfile = () => {
     enabled: !!professional?.id,
   });
 
+  const { data: workingHours } = useQuery({
+    queryKey: ["professional-hours", professional?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("working_hours")
+        .select("*")
+        .eq("professional_id", professional!.id)
+        .order("day_of_week");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!professional?.id,
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
