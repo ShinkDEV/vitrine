@@ -22,6 +22,9 @@ const Admin = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<string>("pendente");
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
 
   // Check if user is admin
   const { data: isAdmin, isLoading: roleLoading } = useQuery({
