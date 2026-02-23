@@ -31,7 +31,7 @@ const EditProfile = () => {
     address_complement: "", whatsapp_number: "", payment_methods: [] as string[],
   });
 
-  const [services, setServices] = useState<{ id?: string; title: string; price: string; duration: string }[]>([]);
+  const [services, setServices] = useState<{ id?: string; title: string; price: string; priceOnRequest: boolean }[]>([]);
   const [uploading, setUploading] = useState(false);
   const [cropImage, setCropImage] = useState<string | null>(null);
   const [portfolioCropImage, setPortfolioCropImage] = useState<string | null>(null);
@@ -76,7 +76,7 @@ const EditProfile = () => {
           id: s.id,
           title: s.title,
           price: s.price ? String(s.price) : "",
-          duration: s.duration_minutes ? String(s.duration_minutes) : "",
+          priceOnRequest: s.price === null || s.price === undefined,
         })) || []
       );
     }
@@ -113,8 +113,8 @@ const EditProfile = () => {
           services.map((s, i) => ({
             professional_id: professional.id,
             title: s.title,
-            price: s.price ? Number(s.price) : null,
-            duration_minutes: s.duration ? Number(s.duration) : null,
+            price: s.priceOnRequest ? null : (s.price ? Number(s.price) : null),
+            duration_minutes: null,
             order_index: i,
           }))
         );
@@ -354,47 +354,56 @@ const EditProfile = () => {
               <h3 className="text-base font-display font-semibold text-foreground mb-3">Serviços</h3>
               <div className="space-y-3">
                 {services.map((service, i) => (
-                  <div key={i} className="flex gap-2 items-start">
-                    <Input
-                      placeholder="Nome do serviço"
-                      value={service.title}
-                      onChange={(e) => {
-                        const updated = [...services];
-                        updated[i] = { ...updated[i], title: e.target.value };
-                        setServices(updated);
-                      }}
-                      className="flex-1"
-                    />
-                    <Input
-                      placeholder="Preço"
-                      type="number"
-                      value={service.price}
-                      onChange={(e) => {
-                        const updated = [...services];
-                        updated[i] = { ...updated[i], price: e.target.value };
-                        setServices(updated);
-                      }}
-                      className="w-24"
-                    />
-                    <Input
-                      placeholder="Min"
-                      type="number"
-                      value={service.duration}
-                      onChange={(e) => {
-                        const updated = [...services];
-                        updated[i] = { ...updated[i], duration: e.target.value };
-                        setServices(updated);
-                      }}
-                      className="w-20"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setServices(services.filter((_, j) => j !== i))}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                  <div key={i} className="flex flex-col gap-2 p-3 rounded-lg border border-border">
+                    <div className="flex gap-2 items-center">
+                      <Input
+                        placeholder="Nome do serviço"
+                        value={service.title}
+                        onChange={(e) => {
+                          const updated = [...services];
+                          updated[i] = { ...updated[i], title: e.target.value };
+                          setServices(updated);
+                        }}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setServices(services.filter((_, j) => j !== i))}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={service.priceOnRequest}
+                          onCheckedChange={(checked) => {
+                            const updated = [...services];
+                            updated[i] = { ...updated[i], priceOnRequest: !!checked, price: checked ? "" : updated[i].price };
+                            setServices(updated);
+                          }}
+                        />
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">A consultar</span>
+                      </label>
+                      {!service.priceOnRequest && (
+                        <div className="relative flex-1">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">R$</span>
+                          <Input
+                            placeholder="0,00"
+                            type="number"
+                            value={service.price}
+                            onChange={(e) => {
+                              const updated = [...services];
+                              updated[i] = { ...updated[i], price: e.target.value };
+                              setServices(updated);
+                            }}
+                            className="pl-9"
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -403,7 +412,7 @@ const EditProfile = () => {
                 variant="outline"
                 size="sm"
                 className="mt-3"
-                onClick={() => setServices([...services, { title: "", price: "", duration: "" }])}
+                onClick={() => setServices([...services, { title: "", price: "", priceOnRequest: false }])}
               >
                 <Plus className="h-4 w-4 mr-1" />
                 Adicionar serviço
