@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import EditProfile from "./pages/EditProfile";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import TermsOfUse from "./pages/TermsOfUse";
 
 const queryClient = new QueryClient();
 
