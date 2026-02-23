@@ -15,6 +15,7 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import TermsOfUse from "./pages/TermsOfUse";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Disclaimer from "./pages/Disclaimer";
 
 const queryClient = new QueryClient();
 
