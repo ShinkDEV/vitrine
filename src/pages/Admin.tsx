@@ -26,6 +26,8 @@ const Admin = () => {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [sealDialogOpen, setSealDialogOpen] = useState(false);
+  const [sealProId, setSealProId] = useState<string | null>(null);
 
   // Check if user is admin
   const { data: hasAccess, isLoading: roleLoading } = useQuery({
