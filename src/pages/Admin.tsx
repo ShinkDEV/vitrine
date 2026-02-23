@@ -200,7 +200,7 @@ const Admin = () => {
                             size="sm"
                             variant="outline"
                             className="text-red-600 border-red-200 hover:bg-red-50"
-                            onClick={() => updateStatus.mutate({ id: pro.id, status: "rascunho" })}
+                            onClick={() => handleReject(pro.id)}
                             disabled={updateStatus.isPending}
                           >
                             <XCircle className="h-4 w-4 mr-1" />
