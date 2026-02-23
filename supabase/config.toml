@@ -2,3 +2,12 @@ project_id = "izvhamufbelljktfghsa"
 
 [functions.upload-to-r2]
 verify_jwt = false
+
+[functions.send-welcome-email]
+verify_jwt = false
+
+[functions.send-profile-published-email]
+verify_jwt = false
+
+[functions.send-contact-email]
+verify_jwt = false
