@@ -32,6 +32,7 @@ const EditProfile = () => {
 
   const [services, setServices] = useState<{ id?: string; title: string; price: string; duration: string }[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [cropImage, setCropImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
