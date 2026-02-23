@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import EditProfile from "./pages/EditProfile";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import TermsOfUse from "./pages/TermsOfUse";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/editar-perfil" element={<EditProfile />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/termos-de-uso" element={<TermsOfUse />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
