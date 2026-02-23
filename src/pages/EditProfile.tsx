@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Plus, Trash2, Upload } from "lucide-react";
+import ProfileCropDialog from "@/components/ProfileCropDialog";
 
 const PAYMENT_OPTIONS = ["Pix", "Cartão de Crédito", "Cartão de Débito", "Dinheiro", "Transferência Bancária"];
 
