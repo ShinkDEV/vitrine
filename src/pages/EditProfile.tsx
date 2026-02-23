@@ -188,7 +188,11 @@ const EditProfile = () => {
 
   const handlePortfolioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || !professional) return;
+    if (!files || files.length === 0) return;
+    if (!professional) {
+      toast.error("Perfil profissional não encontrado. Recarregue a página.");
+      return;
+    }
     const currentCount = professional.portfolio_photos?.length ?? 0;
     if (currentCount + files.length > 10) {
       toast.error("Máximo de 10 fotos no portfólio.");
