@@ -38,6 +38,7 @@ const App = () => (
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/termos-de-uso" element={<TermsOfUse />} />
                 <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+                <Route path="/isencao-de-responsabilidade" element={<Disclaimer />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
