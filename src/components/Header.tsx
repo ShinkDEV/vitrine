@@ -11,9 +11,7 @@ const Header = () => {
     <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <span className="text-xl font-display font-bold text-primary">
-            Vitrine dos Especialistas
-          </span>
+          <img src={logo} alt="Vitrine Especialistas da Beleza" className="h-10 w-auto" />
         </Link>
 
         <nav className="flex items-center gap-3">
