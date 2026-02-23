@@ -46,6 +46,45 @@ export type Database = {
           },
         ]
       }
+      professional_seals: {
+        Row: {
+          assigned_at: string
+          assigned_by: string
+          id: string
+          professional_id: string
+          seal_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by: string
+          id?: string
+          professional_id: string
+          seal_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string
+          id?: string
+          professional_id?: string
+          seal_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_seals_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_seals_seal_id_fkey"
+            columns: ["seal_id"]
+            isOneToOne: false
+            referencedRelation: "seals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professionals: {
         Row: {
           address_complement: string | null
@@ -133,6 +172,27 @@ export type Database = {
           email?: string | null
           id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      seals: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          name?: string
         }
         Relationships: []
       }
