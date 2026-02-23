@@ -41,7 +41,24 @@ const Dashboard = () => {
   ];
   const completedCount = checks.filter((c) => c.done).length;
   const completionPercent = Math.round((completedCount / checks.length) * 100);
+  const isComplete = completionPercent === 100;
+  const canSubmitForApproval = isComplete && professional?.status === "rascunho";
 
+  const submitForApproval = useMutation({
+    mutationFn: async () => {
+      if (!professional) return;
+      const { error } = await supabase
+        .from("professionals")
+        .update({ status: "pendente" })
+        .eq("id", professional.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Perfil enviado para aprovação!");
+      queryClient.invalidateQueries({ queryKey: ["my-professional"] });
+    },
+    onError: (err: any) => toast.error(err.message || "Erro ao enviar para aprovação."),
+  });
   return (
     <div className="min-h-screen bg-background">
       <Header />
