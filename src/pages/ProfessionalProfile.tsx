@@ -202,7 +202,6 @@ const ProfessionalProfile = () => {
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
                       {service.price && (
                         <span className="flex items-center gap-1">
-                          <DollarSign className="h-3.5 w-3.5" />
                           R$ {Number(service.price).toFixed(2)}
                         </span>
                       )}
