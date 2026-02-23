@@ -412,7 +412,7 @@ const EditProfile = () => {
                 variant="outline"
                 size="sm"
                 className="mt-3"
-                onClick={() => setServices([...services, { title: "", price: "", duration: "" }])}
+                onClick={() => setServices([...services, { title: "", price: "", priceOnRequest: false }])}
               >
                 <Plus className="h-4 w-4 mr-1" />
                 Adicionar serviço
