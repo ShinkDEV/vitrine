@@ -11,6 +11,7 @@ import { CheckCircle2, Circle, Edit, ExternalLink, Send } from "lucide-react";
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
