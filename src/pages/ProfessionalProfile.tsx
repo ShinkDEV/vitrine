@@ -25,6 +25,19 @@ const ProfessionalProfile = () => {
     enabled: !!slug,
   });
 
+  const { data: seals } = useQuery({
+    queryKey: ["professional-seals", professional?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("professional_seals")
+        .select("*, seal:seals(*)")
+        .eq("professional_id", professional!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!professional?.id,
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
