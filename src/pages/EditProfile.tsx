@@ -29,7 +29,9 @@ const EditProfile = () => {
     name: "", bio: "", country: "Brasil", state: "", city: "",
     address_street: "", address_number: "", address_neighborhood: "",
     address_complement: "", whatsapp_number: "", payment_methods: [] as string[],
+    slug: "",
   });
+  const [slugError, setSlugError] = useState("");
 
   const [services, setServices] = useState<{ id?: string; title: string; price: string; priceOnRequest: boolean }[]>([]);
   const [workingHours, setWorkingHours] = useState<{ day: number; enabled: boolean; open: string; close: string }[]>(
@@ -86,6 +88,7 @@ const EditProfile = () => {
         address_complement: professional.address_complement || "",
         whatsapp_number: professional.whatsapp_number || "",
         payment_methods: professional.payment_methods || [],
+        slug: professional.slug || "",
       });
       setServices(
         professional.services?.map((s) => ({
@@ -115,6 +118,19 @@ const EditProfile = () => {
     mutationFn: async () => {
       if (!professional) return;
 
+      // Validate slug
+      const cleanSlug = form.slug.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-").replace(/^-|-$/g, "");
+      if (!cleanSlug) throw new Error("Username é obrigatório.");
+      if (cleanSlug !== professional.slug) {
+        const { data: existing } = await supabase
+          .from("professionals")
+          .select("id")
+          .eq("slug", cleanSlug)
+          .neq("id", professional.id)
+          .maybeSingle();
+        if (existing) throw new Error("Este username já está em uso. Escolha outro.");
+      }
+
       const whatsappClean = form.whatsapp_number.replace(/\D/g, "");
       const { error } = await supabase
         .from("professionals")
@@ -131,6 +147,7 @@ const EditProfile = () => {
           whatsapp_number: whatsappClean,
           whatsapp_link: whatsappClean ? `https://wa.me/${whatsappClean}` : null,
           payment_methods: form.payment_methods,
+          slug: cleanSlug,
         })
         .eq("id", professional.id);
       if (error) throw error;
@@ -344,6 +361,24 @@ const EditProfile = () => {
               <div className="sm:col-span-2">
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Nome profissional / Nome do salão</label>
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Username (link do perfil)</label>
+                <div className="flex items-center gap-0">
+                  <span className="text-sm text-muted-foreground whitespace-nowrap bg-muted px-3 h-10 flex items-center rounded-l-lg border border-r-0 border-input">/p/</span>
+                  <Input
+                    value={form.slug}
+                    onChange={(e) => {
+                      const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+                      setForm({ ...form, slug: val });
+                      setSlugError("");
+                    }}
+                    className="rounded-l-none"
+                    placeholder="seu-username"
+                  />
+                </div>
+                {slugError && <p className="text-xs text-destructive mt-1">{slugError}</p>}
+                <p className="text-xs text-muted-foreground mt-1">Seu perfil ficará em: /p/{form.slug || "..."}</p>
               </div>
               <div className="sm:col-span-2">
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Bio (até 300 caracteres)</label>
