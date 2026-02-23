@@ -34,6 +34,9 @@ const EditProfile = () => {
   const [services, setServices] = useState<{ id?: string; title: string; price: string; duration: string }[]>([]);
   const [uploading, setUploading] = useState(false);
   const [cropImage, setCropImage] = useState<string | null>(null);
+  const [portfolioCropImage, setPortfolioCropImage] = useState<string | null>(null);
+  const [pendingPortfolioFiles, setPendingPortfolioFiles] = useState<File[]>([]);
+  const [currentPortfolioFileIndex, setCurrentPortfolioFileIndex] = useState(0);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
