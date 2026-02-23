@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { User, LogOut, LayoutDashboard } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const Header = () => {
   const { user, signOut } = useAuth();
