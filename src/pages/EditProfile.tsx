@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Plus, Trash2, Upload, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, Upload, ArrowLeft, Clock } from "lucide-react";
 import ProfileCropDialog from "@/components/ProfileCropDialog";
 import PortfolioCropDialog from "@/components/PortfolioCropDialog";
 
@@ -32,6 +32,9 @@ const EditProfile = () => {
   });
 
   const [services, setServices] = useState<{ id?: string; title: string; price: string; priceOnRequest: boolean }[]>([]);
+  const [workingHours, setWorkingHours] = useState<{ day: number; enabled: boolean; open: string; close: string }[]>(
+    Array.from({ length: 7 }, (_, i) => ({ day: i, enabled: false, open: "09:00", close: "18:00" }))
+  );
   const [uploading, setUploading] = useState(false);
   const [cropImage, setCropImage] = useState<string | null>(null);
   const [portfolioCropImage, setPortfolioCropImage] = useState<string | null>(null);
@@ -54,6 +57,19 @@ const EditProfile = () => {
       return data;
     },
     enabled: !!user,
+  });
+
+  const { data: existingHours } = useQuery({
+    queryKey: ["my-working-hours", professional?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("working_hours")
+        .select("*")
+        .eq("professional_id", professional!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!professional?.id,
   });
 
   useEffect(() => {
@@ -81,6 +97,19 @@ const EditProfile = () => {
       );
     }
   }, [professional]);
+
+  useEffect(() => {
+    if (existingHours) {
+      setWorkingHours(
+        Array.from({ length: 7 }, (_, i) => {
+          const found = existingHours.find((h) => h.day_of_week === i);
+          return found
+            ? { day: i, enabled: true, open: found.open_time.slice(0, 5), close: found.close_time.slice(0, 5) }
+            : { day: i, enabled: false, open: "09:00", close: "18:00" };
+        })
+      );
+    }
+  }, [existingHours]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -119,6 +148,21 @@ const EditProfile = () => {
           }))
         );
         if (sError) throw sError;
+      }
+
+      // Save working hours
+      await supabase.from("working_hours").delete().eq("professional_id", professional.id);
+      const enabledHours = workingHours.filter((h) => h.enabled);
+      if (enabledHours.length > 0) {
+        const { error: whError } = await supabase.from("working_hours").insert(
+          enabledHours.map((h) => ({
+            professional_id: professional.id,
+            day_of_week: h.day,
+            open_time: h.open,
+            close_time: h.close,
+          }))
+        );
+        if (whError) throw whError;
       }
     },
     onSuccess: () => {
@@ -421,6 +465,59 @@ const EditProfile = () => {
                 <Plus className="h-4 w-4 mr-1" />
                 Adicionar serviço
               </Button>
+            </div>
+
+            {/* Working Hours */}
+            <div>
+              <h3 className="text-base font-display font-semibold text-foreground mb-3 flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Horários de atendimento
+              </h3>
+              <div className="space-y-2">
+                {["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"].map((dayName, i) => {
+                  const h = workingHours[i];
+                  return (
+                    <div key={i} className="flex items-center gap-3 py-1.5">
+                      <Checkbox
+                        checked={h.enabled}
+                        onCheckedChange={(checked) => {
+                          const updated = [...workingHours];
+                          updated[i] = { ...updated[i], enabled: !!checked };
+                          setWorkingHours(updated);
+                        }}
+                      />
+                      <span className="text-sm text-foreground w-20">{dayName}</span>
+                      {h.enabled ? (
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="time"
+                            value={h.open}
+                            onChange={(e) => {
+                              const updated = [...workingHours];
+                              updated[i] = { ...updated[i], open: e.target.value };
+                              setWorkingHours(updated);
+                            }}
+                            className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                          />
+                          <span className="text-sm text-muted-foreground">às</span>
+                          <input
+                            type="time"
+                            value={h.close}
+                            onChange={(e) => {
+                              const updated = [...workingHours];
+                              updated[i] = { ...updated[i], close: e.target.value };
+                              setWorkingHours(updated);
+                            }}
+                            className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Fechado</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Payment Methods */}

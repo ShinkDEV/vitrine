@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { MapPin, Clock, DollarSign, CreditCard, X, Copy, Check } from "lucide-react";
+import { MapPin, Clock, DollarSign, CreditCard, X, Copy, CalendarDays } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -32,6 +32,20 @@ const ProfessionalProfile = () => {
         .from("professional_seals")
         .select("*, seal:seals(*)")
         .eq("professional_id", professional!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!professional?.id,
+  });
+
+  const { data: workingHours } = useQuery({
+    queryKey: ["professional-hours", professional?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("working_hours")
+        .select("*")
+        .eq("professional_id", professional!.id)
+        .order("day_of_week");
       if (error) throw error;
       return data;
     },
@@ -210,6 +224,33 @@ const ProfessionalProfile = () => {
           </div>
         )}
 
+        {/* Working Hours */}
+        {workingHours && workingHours.length > 0 && (
+          <div className="bg-card rounded-2xl shadow-card p-6 animate-fade-in" style={{ animationDelay: "0.25s" }}>
+            <h2 className="text-lg font-display font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Horários de atendimento
+            </h2>
+            <div className="space-y-2">
+              {["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"].map((dayName, i) => {
+                const found = workingHours.find((h) => h.day_of_week === i);
+                return (
+                  <div key={i} className="flex justify-between text-sm py-1 border-b border-border last:border-0">
+                    <span className="text-foreground font-medium">{dayName}</span>
+                    {found ? (
+                      <span className="text-muted-foreground">
+                        {found.open_time.slice(0, 5)} — {found.close_time.slice(0, 5)}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">Fechado</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Payment Methods */}
         {professional.payment_methods && professional.payment_methods.length > 0 && (
           <div className="bg-card rounded-2xl shadow-card p-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
@@ -244,6 +285,12 @@ const ProfessionalProfile = () => {
             </div>
           </div>
         )}
+
+        {/* Member since */}
+        <div className="text-center text-xs text-muted-foreground py-2 animate-fade-in" style={{ animationDelay: "0.5s" }}>
+          <CalendarDays className="h-3.5 w-3.5 inline mr-1" />
+          Membro desde {new Date(professional.created_at).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
+        </div>
       </div>
 
       {/* Photo Modal */}
