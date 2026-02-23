@@ -14,16 +14,197 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      portfolio_photos: {
+        Row: {
+          created_at: string
+          id: string
+          order_index: number | null
+          photo_url: string
+          professional_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_index?: number | null
+          photo_url: string
+          professional_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_index?: number | null
+          photo_url?: string
+          professional_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_photos_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      professionals: {
+        Row: {
+          address_complement: string | null
+          address_neighborhood: string | null
+          address_number: string | null
+          address_street: string | null
+          bio: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          id: string
+          name: string
+          payment_methods: string[] | null
+          profile_photo_url: string | null
+          slug: string
+          state: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          whatsapp_link: string | null
+          whatsapp_number: string | null
+        }
+        Insert: {
+          address_complement?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_street?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          payment_methods?: string[] | null
+          profile_photo_url?: string | null
+          slug: string
+          state?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          whatsapp_link?: string | null
+          whatsapp_number?: string | null
+        }
+        Update: {
+          address_complement?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_street?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          payment_methods?: string[] | null
+          profile_photo_url?: string | null
+          slug?: string
+          state?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          whatsapp_link?: string | null
+          whatsapp_number?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          created_at: string
+          duration_minutes: number | null
+          id: string
+          order_index: number | null
+          price: number | null
+          professional_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          order_index?: number | null
+          price?: number | null
+          professional_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          order_index?: number | null
+          price?: number | null
+          professional_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_slug: { Args: { name: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "professional" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +331,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["professional", "admin"],
+    },
   },
 } as const
