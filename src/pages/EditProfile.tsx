@@ -59,6 +59,19 @@ const EditProfile = () => {
     enabled: !!user,
   });
 
+  const { data: existingHours } = useQuery({
+    queryKey: ["my-working-hours", professional?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("working_hours")
+        .select("*")
+        .eq("professional_id", professional!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!professional?.id,
+  });
+
   useEffect(() => {
     if (professional) {
       setForm({
