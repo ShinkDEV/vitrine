@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Plus, Trash2, Upload } from "lucide-react";
+import { Plus, Trash2, Upload, ArrowLeft } from "lucide-react";
 import ProfileCropDialog from "@/components/ProfileCropDialog";
 import PortfolioCropDialog from "@/components/PortfolioCropDialog";
 
