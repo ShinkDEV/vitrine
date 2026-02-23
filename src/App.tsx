@@ -36,6 +36,7 @@ const App = () => (
                 <Route path="/editar-perfil" element={<EditProfile />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/termos-de-uso" element={<TermsOfUse />} />
+                <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
