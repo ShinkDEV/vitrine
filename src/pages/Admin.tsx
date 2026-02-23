@@ -27,17 +27,16 @@ const Admin = () => {
   const [rejectionReason, setRejectionReason] = useState("");
 
   // Check if user is admin
-  const { data: isAdmin, isLoading: roleLoading } = useQuery({
-    queryKey: ["is-admin", user?.id],
+  const { data: hasAccess, isLoading: roleLoading } = useQuery({
+    queryKey: ["is-admin-or-colaborador", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user!.id)
-        .eq("role", "admin")
-        .maybeSingle();
+        .in("role", ["admin", "colaborador"]);
       if (error) throw error;
-      return !!data;
+      return (data?.length ?? 0) > 0;
     },
     enabled: !!user,
   });
