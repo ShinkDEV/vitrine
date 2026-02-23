@@ -43,10 +43,11 @@ const Admin = () => {
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
-    if (!authLoading && !roleLoading && user && isAdmin === false) {
+    if (!authLoading && !roleLoading && user && hasAccess === false) {
       toast.error("Acesso negado.");
       navigate("/dashboard");
     }
+  }, [user, authLoading, hasAccess, roleLoading, navigate]);
   }, [user, authLoading, isAdmin, roleLoading, navigate]);
 
   // Fetch professionals
