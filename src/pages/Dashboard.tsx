@@ -34,7 +34,7 @@ const Dashboard = () => {
   const checks = [
     { label: "Foto de perfil", done: !!professional?.profile_photo_url },
     { label: "Cidade e Estado", done: !!professional?.city && !!professional?.state },
-    { label: "Pelo menos 3 serviços", done: (professional?.services?.length ?? 0) >= 3 },
+    { label: "Pelo menos 1 serviço", done: (professional?.services?.length ?? 0) >= 1 },
     { label: "WhatsApp configurado", done: !!professional?.whatsapp_number },
     { label: "Portfólio com no mínimo 3 fotos", done: (professional?.portfolio_photos?.length ?? 0) >= 3 },
   ];
