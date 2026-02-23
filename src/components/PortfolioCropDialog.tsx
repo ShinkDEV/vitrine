@@ -33,22 +33,29 @@ const PortfolioCropDialog = ({ open, imageSrc, onClose, onCropComplete }: Portfo
     if (!image || !crop) return;
 
     const canvas = document.createElement("canvas");
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
     const outW = 600;
     const outH = 800; // 3:4 vertical
     canvas.width = outW;
     canvas.height = outH;
     const ctx = canvas.getContext("2d")!;
 
-    ctx.drawImage(
-      image,
-      crop.x * scaleX,
-      crop.y * scaleY,
-      crop.width * scaleX,
-      crop.height * scaleY,
-      0, 0, outW, outH
-    );
+    // Convert percentage crop to natural pixel values
+    let sx: number, sy: number, sw: number, sh: number;
+    if (crop.unit === "%") {
+      sx = (crop.x / 100) * image.naturalWidth;
+      sy = (crop.y / 100) * image.naturalHeight;
+      sw = (crop.width / 100) * image.naturalWidth;
+      sh = (crop.height / 100) * image.naturalHeight;
+    } else {
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+      sx = crop.x * scaleX;
+      sy = crop.y * scaleY;
+      sw = crop.width * scaleX;
+      sh = crop.height * scaleY;
+    }
+
+    ctx.drawImage(image, sx, sy, sw, sh, 0, 0, outW, outH);
 
     canvas.toBlob(
       (blob) => {
