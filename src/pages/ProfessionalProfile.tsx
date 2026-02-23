@@ -165,15 +165,15 @@ const ProfessionalProfile = () => {
           {seals && seals.length > 0 && (
             <div className="mt-4 pt-4 border-t border-border">
               <p className="text-sm font-medium text-foreground mb-2">Formações</p>
-              <div className="flex flex-wrap gap-4 justify-center">
+              <div className="grid grid-cols-3 gap-3 justify-items-center">
                 {seals.map((ps: any) => (
-                  <div key={ps.id} className="flex flex-col items-center gap-1">
+                  <div key={ps.id} className="flex flex-col items-center gap-1 min-w-0">
                     {ps.seal?.image_url ? (
-                      <img src={ps.seal.image_url} alt={ps.seal?.name} className="w-16 h-16 object-contain" />
+                      <img src={ps.seal.image_url} alt={ps.seal?.name} className="w-14 h-14 object-contain" />
                     ) : (
                       <span className="text-3xl">{ps.seal?.icon}</span>
                     )}
-                    <span className="text-xs text-muted-foreground font-medium">{ps.seal?.name}</span>
+                    <span className="text-xs text-muted-foreground font-medium text-center leading-tight">{ps.seal?.name}</span>
                   </div>
                 ))}
               </div>
