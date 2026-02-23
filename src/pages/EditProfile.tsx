@@ -29,7 +29,9 @@ const EditProfile = () => {
     name: "", bio: "", country: "Brasil", state: "", city: "",
     address_street: "", address_number: "", address_neighborhood: "",
     address_complement: "", whatsapp_number: "", payment_methods: [] as string[],
+    slug: "",
   });
+  const [slugError, setSlugError] = useState("");
 
   const [services, setServices] = useState<{ id?: string; title: string; price: string; priceOnRequest: boolean }[]>([]);
   const [workingHours, setWorkingHours] = useState<{ day: number; enabled: boolean; open: string; close: string }[]>(
