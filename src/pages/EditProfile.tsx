@@ -31,7 +31,7 @@ const EditProfile = () => {
     address_complement: "", whatsapp_number: "", payment_methods: [] as string[],
   });
 
-  const [services, setServices] = useState<{ id?: string; title: string; price: string; duration: string }[]>([]);
+  const [services, setServices] = useState<{ id?: string; title: string; price: string; priceOnRequest: boolean }[]>([]);
   const [uploading, setUploading] = useState(false);
   const [cropImage, setCropImage] = useState<string | null>(null);
   const [portfolioCropImage, setPortfolioCropImage] = useState<string | null>(null);
