@@ -450,15 +450,11 @@ const EditProfile = () => {
                   ))}
                 </div>
               )}
-              <label className="cursor-pointer">
-                <Button type="button" variant="outline" size="sm" asChild>
-                  <span>
-                    <Upload className="h-4 w-4 mr-1" />
-                    Adicionar fotos
-                  </span>
-                </Button>
-                <input type="file" accept="image/*" multiple className="hidden" onChange={handlePortfolioUpload} disabled={uploading} />
-              </label>
+              <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('portfolio-file-input')?.click()}>
+                  <Upload className="h-4 w-4 mr-1" />
+                  Adicionar fotos
+              </Button>
+              <input id="portfolio-file-input" type="file" accept="image/*" multiple className="hidden" onChange={handlePortfolioUpload} disabled={uploading} />
             </div>
 
             <Button type="submit" variant="gradient" className="w-full" size="lg" disabled={saveMutation.isPending}>
