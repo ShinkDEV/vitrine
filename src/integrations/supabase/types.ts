@@ -21,6 +21,7 @@ export type Database = {
           order_index: number | null
           photo_url: string
           professional_id: string
+          title: string | null
         }
         Insert: {
           created_at?: string
@@ -28,6 +29,7 @@ export type Database = {
           order_index?: number | null
           photo_url: string
           professional_id: string
+          title?: string | null
         }
         Update: {
           created_at?: string
@@ -35,6 +37,7 @@ export type Database = {
           order_index?: number | null
           photo_url?: string
           professional_id?: string
+          title?: string | null
         }
         Relationships: [
           {

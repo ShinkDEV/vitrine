@@ -3,13 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { MapPin, Clock, DollarSign, CreditCard, X, Copy, CalendarDays } from "lucide-react";
+import { MapPin, Clock, DollarSign, CreditCard, X, Copy, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 const ProfessionalProfile = () => {
   const { slug } = useParams<{ slug: string }>();
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
   const { data: professional, isLoading } = useQuery({
     queryKey: ["professional", slug],
@@ -267,24 +268,53 @@ const ProfessionalProfile = () => {
         )}
 
         {/* Portfolio */}
-        {professional.portfolio_photos && professional.portfolio_photos.length > 0 && (
-          <div className="bg-card rounded-2xl shadow-card p-6 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            <h2 className="text-lg font-display font-semibold text-foreground mb-4">Portfólio</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {professional.portfolio_photos
-                .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
-                .map((photo) => (
-                  <button
-                    key={photo.id}
-                    onClick={() => setSelectedPhoto(photo.photo_url)}
-                    className="aspect-square rounded-xl overflow-hidden hover:opacity-90 transition-opacity"
-                  >
-                    <img src={photo.photo_url} alt="Portfólio" className="w-full h-full object-cover" />
-                  </button>
-                ))}
+        {professional.portfolio_photos && professional.portfolio_photos.length > 0 && (() => {
+          const sortedPhotos = [...professional.portfolio_photos].sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
+          const current = sortedPhotos[carouselIndex];
+          return (
+            <div className="bg-card rounded-2xl shadow-card p-6 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+              <h2 className="text-lg font-display font-semibold text-foreground mb-4">Portfólio</h2>
+              <div className="relative">
+                <button
+                  onClick={() => setSelectedPhoto(current.photo_url)}
+                  className="w-full aspect-[4/3] rounded-xl overflow-hidden"
+                >
+                  <img src={current.photo_url} alt={current.title || "Portfólio"} className="w-full h-full object-cover" />
+                </button>
+                {sortedPhotos.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setCarouselIndex((carouselIndex - 1 + sortedPhotos.length) % sortedPhotos.length)}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-card/80 backdrop-blur-sm rounded-full p-1.5 shadow-md hover:bg-card transition-colors"
+                    >
+                      <ChevronLeft className="h-5 w-5 text-foreground" />
+                    </button>
+                    <button
+                      onClick={() => setCarouselIndex((carouselIndex + 1) % sortedPhotos.length)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-card/80 backdrop-blur-sm rounded-full p-1.5 shadow-md hover:bg-card transition-colors"
+                    >
+                      <ChevronRight className="h-5 w-5 text-foreground" />
+                    </button>
+                  </>
+                )}
+              </div>
+              {current.title && (
+                <p className="text-sm text-foreground font-medium mt-3 text-center">{current.title}</p>
+              )}
+              {sortedPhotos.length > 1 && (
+                <div className="flex justify-center gap-1.5 mt-3">
+                  {sortedPhotos.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCarouselIndex(i)}
+                      className={`w-2 h-2 rounded-full transition-colors ${i === carouselIndex ? "bg-primary" : "bg-border"}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Member since */}
         <div className="text-center text-xs text-muted-foreground py-2 animate-fade-in" style={{ animationDelay: "0.5s" }}>
