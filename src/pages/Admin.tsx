@@ -71,10 +71,13 @@ const Admin = () => {
   });
 
   const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({ id, status, reason }: { id: string; status: string; reason?: string }) => {
+      const updateData: Record<string, any> = { status };
+      if (reason !== undefined) updateData.rejection_reason = reason;
+      if (status === "publicado") updateData.rejection_reason = null;
       const { error } = await supabase
         .from("professionals")
-        .update({ status })
+        .update(updateData)
         .eq("id", id);
       if (error) throw error;
     },
