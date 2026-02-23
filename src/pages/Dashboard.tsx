@@ -1,15 +1,17 @@
 import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle, Edit, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
+import { CheckCircle2, Circle, Edit, ExternalLink, Send } from "lucide-react";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
@@ -40,7 +42,24 @@ const Dashboard = () => {
   ];
   const completedCount = checks.filter((c) => c.done).length;
   const completionPercent = Math.round((completedCount / checks.length) * 100);
+  const isComplete = completionPercent === 100;
+  const canSubmitForApproval = isComplete && professional?.status === "rascunho";
 
+  const submitForApproval = useMutation({
+    mutationFn: async () => {
+      if (!professional) return;
+      const { error } = await supabase
+        .from("professionals")
+        .update({ status: "pendente" })
+        .eq("id", professional.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Perfil enviado para aprovação!");
+      queryClient.invalidateQueries({ queryKey: ["my-professional"] });
+    },
+    onError: (err: any) => toast.error(err.message || "Erro ao enviar para aprovação."),
+  });
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -95,6 +114,19 @@ const Dashboard = () => {
                 Editar perfil
               </Link>
             </Button>
+            {canSubmitForApproval && (
+              <Button
+                variant="outline"
+                onClick={() => submitForApproval.mutate()}
+                disabled={submitForApproval.isPending}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                {submitForApproval.isPending ? "Enviando..." : "Enviar para aprovação"}
+              </Button>
+            )}
+            {professional?.status === "pendente" && (
+              <p className="text-sm text-muted-foreground self-center">Seu perfil está aguardando aprovação do admin.</p>
+            )}
             {professional?.slug && professional.status === "publicado" && (
               <Button variant="outline" asChild>
                 <Link to={`/p/${professional.slug}`}>
