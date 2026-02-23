@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Plus, Trash2, Upload } from "lucide-react";
+import ProfileCropDialog from "@/components/ProfileCropDialog";
 
 const PAYMENT_OPTIONS = ["Pix", "Cartão de Crédito", "Cartão de Débito", "Dinheiro", "Transferência Bancária"];
 
@@ -31,6 +32,7 @@ const EditProfile = () => {
 
   const [services, setServices] = useState<{ id?: string; title: string; price: string; duration: string }[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [cropImage, setCropImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
@@ -151,14 +153,22 @@ const EditProfile = () => {
     return data.url;
   };
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !professional) return;
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCropImage(reader.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleCropComplete = async (blob: Blob) => {
+    setCropImage(null);
+    if (!professional) return;
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${professional.id}/profile.${ext}`;
-      const publicUrl = await uploadToR2(file, path);
+      const path = `${professional.id}/profile.jpg`;
+      const publicUrl = await uploadToR2(new File([blob], "profile.jpg", { type: "image/jpeg" }), path);
       await supabase.from("professionals").update({ profile_photo_url: publicUrl }).eq("id", professional.id);
       toast.success("Foto de perfil atualizada!");
       queryClient.invalidateQueries({ queryKey: ["my-professional-edit"] });
@@ -425,6 +435,14 @@ const EditProfile = () => {
           </form>
         </div>
       </div>
+      {cropImage && (
+        <ProfileCropDialog
+          open={!!cropImage}
+          imageSrc={cropImage}
+          onClose={() => setCropImage(null)}
+          onCropComplete={handleCropComplete}
+        />
+      )}
     </div>
   );
 };
