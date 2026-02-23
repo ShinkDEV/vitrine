@@ -185,7 +185,7 @@ const EditProfile = () => {
     }
   };
 
-  const handlePortfolioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePortfolioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || !professional) return;
     const currentCount = professional.portfolio_photos?.length ?? 0;
@@ -193,23 +193,48 @@ const EditProfile = () => {
       toast.error("Máximo de 10 fotos no portfólio.");
       return;
     }
+    const fileList = Array.from(files);
+    setPendingPortfolioFiles(fileList);
+    setCurrentPortfolioFileIndex(0);
+    // Load first file for cropping
+    const reader = new FileReader();
+    reader.onload = () => setPortfolioCropImage(reader.result as string);
+    reader.readAsDataURL(fileList[0]);
+    e.target.value = "";
+  };
+
+  const handlePortfolioCropComplete = async (blob: Blob) => {
+    setPortfolioCropImage(null);
+    if (!professional) return;
+
+    const currentCount = professional.portfolio_photos?.length ?? 0;
+    const idx = currentPortfolioFileIndex;
+
     setUploading(true);
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const ext = file.name.split(".").pop();
-        const path = `${professional.id}/portfolio-${Date.now()}-${i}.${ext}`;
-        const publicUrl = await uploadToR2(file, path);
-        await supabase.from("portfolio_photos").insert({
-          professional_id: professional.id,
-          photo_url: publicUrl,
-          order_index: currentCount + i,
-        });
-      }
-      toast.success("Fotos adicionadas ao portfólio!");
+      const path = `${professional.id}/portfolio-${Date.now()}-${idx}.jpg`;
+      const publicUrl = await uploadToR2(new File([blob], "portfolio.jpg", { type: "image/jpeg" }), path);
+      await supabase.from("portfolio_photos").insert({
+        professional_id: professional.id,
+        photo_url: publicUrl,
+        order_index: currentCount + idx,
+      });
       queryClient.invalidateQueries({ queryKey: ["my-professional-edit"] });
+
+      // Process next file if any
+      const nextIndex = idx + 1;
+      if (nextIndex < pendingPortfolioFiles.length) {
+        setCurrentPortfolioFileIndex(nextIndex);
+        const reader = new FileReader();
+        reader.onload = () => setPortfolioCropImage(reader.result as string);
+        reader.readAsDataURL(pendingPortfolioFiles[nextIndex]);
+      } else {
+        setPendingPortfolioFiles([]);
+        toast.success("Fotos adicionadas ao portfólio!");
+      }
     } catch (err: any) {
-      toast.error(err.message || "Erro ao enviar fotos.");
+      toast.error(err.message || "Erro ao enviar foto.");
+      setPendingPortfolioFiles([]);
     } finally {
       setUploading(false);
     }
