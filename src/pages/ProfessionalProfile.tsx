@@ -224,6 +224,33 @@ const ProfessionalProfile = () => {
           </div>
         )}
 
+        {/* Working Hours */}
+        {workingHours && workingHours.length > 0 && (
+          <div className="bg-card rounded-2xl shadow-card p-6 animate-fade-in" style={{ animationDelay: "0.25s" }}>
+            <h2 className="text-lg font-display font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Horários de atendimento
+            </h2>
+            <div className="space-y-2">
+              {["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"].map((dayName, i) => {
+                const found = workingHours.find((h) => h.day_of_week === i);
+                return (
+                  <div key={i} className="flex justify-between text-sm py-1 border-b border-border last:border-0">
+                    <span className="text-foreground font-medium">{dayName}</span>
+                    {found ? (
+                      <span className="text-muted-foreground">
+                        {found.open_time.slice(0, 5)} — {found.close_time.slice(0, 5)}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">Fechado</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Payment Methods */}
         {professional.payment_methods && professional.payment_methods.length > 0 && (
           <div className="bg-card rounded-2xl shadow-card p-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
