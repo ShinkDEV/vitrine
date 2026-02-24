@@ -101,6 +101,21 @@ const Admin = () => {
     enabled: !!sealProId,
   });
 
+  // Fetch certificates for previewed professional
+  const { data: previewCertificates } = useQuery({
+    queryKey: ["professional-certificates-admin", previewPro?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("professional_certificates")
+        .select("*")
+        .eq("professional_id", previewPro!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!previewPro?.id,
+  });
+
   const toggleSeal = useMutation({
     mutationFn: async ({ proId, sealId, assign }: { proId: string; sealId: string; assign: boolean }) => {
       if (assign) {
