@@ -438,7 +438,6 @@ const Admin = () => {
                             <div className="flex gap-3 text-muted-foreground text-xs">
                               {s.price && (
                                 <span className="flex items-center gap-0.5">
-                                  <DollarSign className="h-3 w-3" />
                                   R$ {Number(s.price).toFixed(2)}
                                 </span>
                               )}
