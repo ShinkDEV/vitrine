@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import SearchFilters from "@/components/SearchFilters";
 import ProfessionalCard from "@/components/ProfessionalCard";
 
-import { Sparkles, SearchX } from "lucide-react";
+import { Sparkles, SearchX, BadgeCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BannerCarousel from "@/components/BannerCarousel";
 import Footer from "@/components/Footer";
