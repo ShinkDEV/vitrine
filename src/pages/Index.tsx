@@ -56,10 +56,15 @@ const Index = () => {
           </div>
           {/* Texto sobreposto (z-20) */}
           <div className="px-4 py-4 text-center -mt-24 relative z-20">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/25 text-primary text-sm font-semibold backdrop-blur-xl mb-4 border border-transparent" style={{ borderImage: 'linear-gradient(90deg, white, #9ca3af) 1' }}>
-              <Sparkles className="h-4 w-4" />
-              Profissionais certificados
-              <BadgeCheck className="h-5 w-5 fill-blue-500 text-white [&>path:first-child]:stroke-blue-500" />
+            <span className="relative inline-flex items-center gap-2 rounded-full mb-4">
+              <span className="absolute inset-0 rounded-full" style={{ background: 'linear-gradient(90deg, white, #9ca3af)', padding: '1px' }}>
+                <span className="block w-full h-full rounded-full bg-white/25 backdrop-blur-xl" />
+              </span>
+              <span className="relative z-10 inline-flex items-center gap-2 px-4 py-1.5 text-primary text-sm font-semibold">
+                <Sparkles className="h-4 w-4" />
+                Profissionais certificados
+                <BadgeCheck className="h-5 w-5 fill-blue-500 text-white [&>path:first-child]:stroke-blue-500" />
+              </span>
             </span>
             <h1 className="text-2xl font-display font-bold text-foreground mb-3 leading-tight">
               Encontre um Especialista<br />da Beleza na sua cidade
