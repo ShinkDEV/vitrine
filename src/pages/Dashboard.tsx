@@ -167,7 +167,9 @@ const Dashboard = () => {
           {professional && (
             <div className="mb-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent text-sm">
               <span className="text-muted-foreground">Status:</span>
-              <span className="font-medium text-accent-foreground capitalize">{professional.status}</span>
+              <span className={`font-medium capitalize ${professional.status === "desativado" ? "text-destructive" : "text-accent-foreground"}`}>
+                {professional.status === "desativado" ? "Desativado por falta de atualização" : professional.status}
+              </span>
             </div>
           )}
 
