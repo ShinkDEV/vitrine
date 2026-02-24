@@ -7,6 +7,17 @@ import { MapPin, Clock, DollarSign, CreditCard, X, Copy, CalendarDays, ChevronLe
 import { useState } from "react";
 import { toast } from "sonner";
 
+const getPaymentIcon = (method: string): string => {
+  const lower = method.toLowerCase();
+  if (lower.includes("pix")) return "🟢";
+  if (lower.includes("crédito") || lower.includes("credito")) return "💳";
+  if (lower.includes("débito") || lower.includes("debito")) return "💳";
+  if (lower.includes("dinheiro")) return "💵";
+  if (lower.includes("transferência") || lower.includes("transferencia") || lower.includes("ted") || lower.includes("doc")) return "🏦";
+  if (lower.includes("boleto")) return "🧾";
+  return "💰";
+};
+
 const ProfessionalProfile = () => {
   const { slug } = useParams<{ slug: string }>();
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
