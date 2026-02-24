@@ -98,7 +98,7 @@ const Index = () => {
         </div>
 
         {/* Search filters below hero */}
-        <div className="container mx-auto px-4 -mt-8 relative z-10">
+        <div className="container mx-auto px-4 md:-mt-4 lg:-mt-8 relative z-10">
           <SearchFilters onSearch={setFilters} />
         </div>
         <div className="h-8" />
