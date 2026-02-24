@@ -51,7 +51,7 @@ const Index = () => {
               className="w-full h-full object-cover"
             />
           </div>
-          <div className="px-4 py-8 text-center bg-background">
+          <div className="px-4 py-4 text-center bg-background -mt-8 relative z-10">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
               <Sparkles className="h-4 w-4" />
               Profissionais certificados
