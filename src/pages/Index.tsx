@@ -57,7 +57,7 @@ const Index = () => {
           {/* Texto sobreposto (z-20) */}
           <div className="px-4 py-4 text-center -mt-24 relative z-20">
             <span className="relative inline-flex items-center gap-2 rounded-full mb-4">
-              <span className="absolute inset-0 rounded-full" style={{ background: 'linear-gradient(90deg, white, #9ca3af)', padding: '1px' }}>
+              <span className="absolute inset-0 rounded-full" style={{ background: 'linear-gradient(90deg, white, #d4d4d8)', padding: '1px' }}>
                 <span className="block w-full h-full rounded-full bg-white/25 backdrop-blur-xl" />
               </span>
               <span className="relative z-10 inline-flex items-center gap-2 px-4 py-1.5 text-primary text-sm font-semibold">
