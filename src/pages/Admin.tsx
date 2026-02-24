@@ -315,6 +315,10 @@ const Admin = () => {
         </div>
       </div>
 
+      <div className="container mx-auto px-4 pb-8 max-w-4xl">
+        <AdminBannerManager />
+      </div>
+
       {/* Rejection reason dialog */}
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent className="max-w-md">
