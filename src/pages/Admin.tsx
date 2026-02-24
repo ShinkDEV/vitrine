@@ -500,6 +500,34 @@ const Admin = () => {
                   </div>
                 )}
 
+                {/* Certificates */}
+                {previewCertificates && previewCertificates.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                      <FileText className="h-4 w-4" />
+                      Certificados ({previewCertificates.length})
+                    </h4>
+                    <div className="space-y-1.5">
+                      {previewCertificates.map((cert: any) => (
+                        <button
+                          key={cert.id}
+                          onClick={async () => {
+                            const { data } = await supabase.storage
+                              .from("certificates")
+                              .createSignedUrl(cert.file_url, 300);
+                            if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+                          }}
+                          className="flex items-center gap-2 w-full text-left p-2 rounded-lg border border-border hover:bg-accent transition-colors"
+                        >
+                          <FileText className="h-4 w-4 text-primary flex-shrink-0" />
+                          <span className="text-sm text-foreground truncate flex-1">{cert.file_name}</span>
+                          <span className="text-xs text-muted-foreground">{new Date(cert.created_at).toLocaleDateString("pt-BR")}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Admin actions */}
                 {previewPro.status === "pendente" && (
                   <div className="flex gap-2 pt-2 border-t border-border">
