@@ -260,6 +260,13 @@ const AdminBannerManager = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <BannerCropDialog
+        open={!!cropSrc}
+        imageSrc={cropSrc || ""}
+        onClose={() => setCropSrc(null)}
+        onCropComplete={handleCropComplete}
+      />
     </div>
   );
 };
