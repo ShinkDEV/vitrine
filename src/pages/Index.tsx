@@ -94,7 +94,8 @@ const Index = () => {
         )}
       </section>
 
-      
+      <BannerCarousel placement="home" />
+      <Footer />
     </div>
   );
 };

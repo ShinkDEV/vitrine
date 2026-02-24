@@ -139,6 +139,8 @@ const Dashboard = () => {
             )}
           </div>
         </div>
+
+        <BannerCarousel placement="dashboard" />
       </div>
     </div>
   );
