@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import BannerCarousel from "@/components/BannerCarousel";
 import Footer from "@/components/Footer";
 import heroBg from "@/assets/hero-bg.webp";
+import heroBgMobile from "@/assets/hero-bg-mobile.png";
 
 const Index = () => {
   const [filters, setFilters] = useState({ country: "", state: "", city: "", query: "" });
