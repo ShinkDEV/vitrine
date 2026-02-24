@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { CheckCircle2, Circle, Edit, ExternalLink, Send } from "lucide-react";
+import { CheckCircle2, Circle, Edit, ExternalLink, Send, AlertTriangle } from "lucide-react";
 import BannerCarousel from "@/components/BannerCarousel";
 
 const Dashboard = () => {
@@ -47,6 +47,19 @@ const Dashboard = () => {
     },
     onError: (err: any) => toast.error(err.message || "Erro ao enviar para aprovação."),
   });
+  // Portfolio update check (6 months)
+  const portfolioUpdateStatus = useMemo(() => {
+    if (!professional?.last_portfolio_update) return null;
+    const lastUpdate = new Date(professional.last_portfolio_update);
+    const now = new Date();
+    const diffMs = now.getTime() - lastUpdate.getTime();
+    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+    const SIX_MONTHS_DAYS = 180;
+    const WARNING_DAYS = 150; // 5 months - pre-warning
+    if (diffDays >= SIX_MONTHS_DAYS) return "expired";
+    if (diffDays >= WARNING_DAYS) return "warning";
+    return null;
+  }, [professional?.last_portfolio_update]);
 
   if (authLoading || !user) return null;
 
@@ -69,6 +82,36 @@ const Dashboard = () => {
         <div className="bg-card rounded-2xl shadow-card p-8 mb-6 animate-fade-in">
           <h1 className="text-2xl font-display font-bold text-foreground mb-1">Seu painel profissional</h1>
           <p className="text-muted-foreground mb-6">Bem-vindo à sua vitrine digital.</p>
+
+          {/* Portfolio Update Warning */}
+          {portfolioUpdateStatus === "expired" && (
+            <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/30 flex items-start gap-3 animate-fade-in">
+              <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-destructive">Atualização obrigatória do portfólio</p>
+                <p className="text-sm text-destructive/80 mt-1">
+                  Faz mais de 6 meses desde a última atualização do seu perfil. Atualize seu portfólio para continuar ativo na vitrine.
+                </p>
+                <Button variant="destructive" size="sm" className="mt-3" asChild>
+                  <Link to="/editar-perfil">Atualizar agora</Link>
+                </Button>
+              </div>
+            </div>
+          )}
+          {portfolioUpdateStatus === "warning" && (
+            <div className="mb-6 p-4 rounded-xl bg-yellow-50 border border-yellow-300 flex items-start gap-3 animate-fade-in">
+              <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-yellow-800">Seu portfólio precisa ser atualizado em breve</p>
+                <p className="text-sm text-yellow-700 mt-1">
+                  Atualize seu perfil e portfólio para manter seu perfil ativo na vitrine. A atualização é obrigatória a cada 6 meses.
+                </p>
+                <Button variant="outline" size="sm" className="mt-3 border-yellow-400 text-yellow-800 hover:bg-yellow-100" asChild>
+                  <Link to="/editar-perfil">Atualizar portfólio</Link>
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Profile Completion */}
           <div className="mb-6">
