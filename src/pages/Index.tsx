@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import BannerCarousel from "@/components/BannerCarousel";
 import Footer from "@/components/Footer";
 import heroBg from "@/assets/hero-bg.webp";
+import heroBgMobile from "@/assets/hero-bg-mobile.png";
 
 const Index = () => {
   const [filters, setFilters] = useState({ country: "", state: "", city: "", query: "" });
@@ -41,12 +42,19 @@ const Index = () => {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        {/* Hero image full-width */}
+        {/* Hero image full-width — desktop vs mobile */}
         <div className="relative w-full" style={{ aspectRatio: '1920/800' }}>
+          {/* Desktop image */}
           <img
             src={heroBg}
             alt="Especialistas da Beleza"
-            className="w-full h-full object-cover"
+            className="hidden md:block w-full h-full object-cover"
+          />
+          {/* Mobile image */}
+          <img
+            src={heroBgMobile}
+            alt="Especialistas da Beleza"
+            className="block md:hidden w-full h-full object-cover"
           />
           {/* Overlay for text readability on left side */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
