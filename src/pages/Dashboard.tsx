@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { CheckCircle2, Circle, Edit, ExternalLink, Send } from "lucide-react";
+import { CheckCircle2, Circle, Edit, ExternalLink, Send, AlertTriangle } from "lucide-react";
 import BannerCarousel from "@/components/BannerCarousel";
 
 const Dashboard = () => {
