@@ -48,24 +48,33 @@ const CertificatesSection = ({ professionalId, userId }: Props) => {
     setUploading(true);
     try {
       const ext = file.name.split(".").pop();
-      const path = `${userId}/${Date.now()}.${ext}`;
+      const path = `certificates/${userId}/${Date.now()}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("certificates")
-        .upload(path, file);
-      if (uploadError) throw uploadError;
+      // Upload to R2 via edge function
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("Não autenticado.");
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("certificates")
-        .getPublicUrl(path);
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("path", path);
 
-      // Since bucket is private, we'll store the path and use signed URLs
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(`${supabaseUrl}/functions/v1/upload-to-r2`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Erro no upload");
+
       const { error: insertError } = await supabase
         .from("professional_certificates")
         .insert({
           professional_id: professionalId,
           file_name: file.name,
-          file_url: path,
+          file_url: result.url,
           file_type: file.type,
         });
       if (insertError) throw insertError;
@@ -81,7 +90,6 @@ const CertificatesSection = ({ professionalId, userId }: Props) => {
 
   const handleDelete = async (cert: any) => {
     try {
-      await supabase.storage.from("certificates").remove([cert.file_url]);
       await supabase.from("professional_certificates").delete().eq("id", cert.id);
       toast.success("Certificado removido.");
       queryClient.invalidateQueries({ queryKey: ["my-certificates", professionalId] });
@@ -90,15 +98,8 @@ const CertificatesSection = ({ professionalId, userId }: Props) => {
     }
   };
 
-  const viewCertificate = async (path: string) => {
-    const { data, error } = await supabase.storage
-      .from("certificates")
-      .createSignedUrl(path, 300); // 5 min
-    if (error || !data?.signedUrl) {
-      toast.error("Erro ao abrir certificado.");
-      return;
-    }
-    window.open(data.signedUrl, "_blank");
+  const viewCertificate = (url: string) => {
+    window.open(url, "_blank");
   };
 
   return (
