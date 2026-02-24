@@ -62,6 +62,20 @@ const Dashboard = () => {
   const isComplete = completionPercent === 100;
   const canSubmitForApproval = isComplete && professional?.status === "rascunho";
 
+  // Portfolio update check (6 months)
+  const portfolioUpdateStatus = useMemo(() => {
+    if (!professional?.last_portfolio_update) return null;
+    const lastUpdate = new Date(professional.last_portfolio_update);
+    const now = new Date();
+    const diffMs = now.getTime() - lastUpdate.getTime();
+    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+    const SIX_MONTHS_DAYS = 180;
+    const WARNING_DAYS = 150; // 5 months - pre-warning
+    if (diffDays >= SIX_MONTHS_DAYS) return "expired";
+    if (diffDays >= WARNING_DAYS) return "warning";
+    return null;
+  }, [professional?.last_portfolio_update]);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
