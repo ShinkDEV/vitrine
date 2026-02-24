@@ -236,15 +236,23 @@ const AdminBannerManager = () => {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">
-                Imagem (1600×400px, proporção 4:1)
+                Imagem (proporção 4:1)
               </label>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
                   <Image className="h-4 w-4 mr-1" />
                   Selecionar imagem
                 </Button>
-                <input ref={fileRef} type="file" accept="image/*" className="hidden" />
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+                {croppedBlob && <span className="text-xs text-green-600 font-medium">✓ Imagem recortada</span>}
               </div>
+              {croppedBlob && (
+                <div className="mt-2 rounded-lg overflow-hidden border border-border">
+                  <AspectRatio ratio={4 / 1}>
+                    <img src={URL.createObjectURL(croppedBlob)} alt="Preview" className="w-full h-full object-cover" />
+                  </AspectRatio>
+                </div>
+              )}
             </div>
             <Button onClick={handleCreateBanner} disabled={uploading} className="w-full">
               {uploading ? "Enviando..." : "Criar Banner"}
