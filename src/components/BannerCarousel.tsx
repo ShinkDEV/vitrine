@@ -25,6 +25,7 @@ const BannerCarousel = ({ placement }: BannerCarouselProps) => {
 
   return (
     <section className="container mx-auto px-4 lg:px-16 pb-8">
+      <p className="text-xs text-muted-foreground mb-2">Anúncio Patrocinado</p>
       <div className="space-y-4">
         {banners.map((banner) => (
           <div key={banner.id} className="rounded-xl overflow-hidden shadow-card">
