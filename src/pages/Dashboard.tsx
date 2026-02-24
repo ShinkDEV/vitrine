@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { CheckCircle2, Circle, Edit, ExternalLink, Send } from "lucide-react";
+import BannerCarousel from "@/components/BannerCarousel";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -138,6 +139,8 @@ const Dashboard = () => {
             )}
           </div>
         </div>
+
+        <BannerCarousel placement="dashboard" />
       </div>
     </div>
   );

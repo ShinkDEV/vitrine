@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, DollarSign, CreditCard, MessageCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import AdminBannerManager from "@/components/AdminBannerManager";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   rascunho: { label: "Rascunho", color: "bg-muted text-muted-foreground" },
@@ -312,6 +313,10 @@ const Admin = () => {
             </div>
           )}
         </div>
+      </div>
+
+      <div className="container mx-auto px-4 pb-8 max-w-4xl">
+        <AdminBannerManager />
       </div>
 
       {/* Rejection reason dialog */}
