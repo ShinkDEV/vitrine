@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { toast } from "sonner";
 import { Plus, Trash2, Image, ExternalLink } from "lucide-react";
+import BannerCropDialog from "@/components/BannerCropDialog";
 
 const AdminBannerManager = () => {
   const { user } = useAuth();
