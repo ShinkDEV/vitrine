@@ -83,6 +83,26 @@ const Dashboard = () => {
           <h1 className="text-2xl font-display font-bold text-foreground mb-1">Seu painel profissional</h1>
           <p className="text-muted-foreground mb-6">Bem-vindo à sua vitrine digital.</p>
 
+          {/* Deactivated Profile Warning */}
+          {professional?.status === "desativado" && (
+            <div className="mb-6 p-5 rounded-xl bg-destructive/10 border-2 border-destructive/40 flex items-start gap-3 animate-fade-in">
+              <Ban className="h-6 w-6 text-destructive flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-base font-bold text-destructive">Perfil desativado por falta de atualização</p>
+                <p className="text-sm text-destructive/80 mt-1">
+                  Seu perfil foi desativado automaticamente porque não foi atualizado nos últimos 7 meses. 
+                  Ele não está mais visível para clientes na vitrine.
+                </p>
+                <p className="text-sm text-foreground mt-2">
+                  Para reativar, atualize seu portfólio e envie para aprovação novamente.
+                </p>
+                <Button variant="destructive" size="sm" className="mt-3" asChild>
+                  <Link to="/editar-perfil">Atualizar e reativar</Link>
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Portfolio Update Warning */}
           {portfolioUpdateStatus === "expired" && (
             <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/30 flex items-start gap-3 animate-fade-in">
