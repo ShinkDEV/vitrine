@@ -61,7 +61,7 @@ const Index = () => {
               Profissionais certificados
             </span>
             <h1 className="text-2xl font-display font-bold text-foreground mb-3 leading-tight">
-              Encontre um Especialista da Beleza na sua cidade
+              Encontre um Especialista<br />da Beleza na sua cidade
             </h1>
             <p className="text-base text-muted-foreground mb-1">
               Profissionais formados e certificados, prontos para transformar seu visual.
