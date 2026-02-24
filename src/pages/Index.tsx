@@ -42,24 +42,40 @@ const Index = () => {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        {/* Hero image full-width — desktop vs mobile */}
-        <div className="relative w-full" style={{ aspectRatio: '1920/800' }}>
-          {/* Desktop image */}
+        {/* === MOBILE: image on top, text below === */}
+        <div className="block md:hidden">
+          <div className="relative w-full aspect-square">
+            <img
+              src={heroBgMobile}
+              alt="Especialistas da Beleza"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="px-4 py-8 text-center bg-background">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+              <Sparkles className="h-4 w-4" />
+              Profissionais certificados
+            </span>
+            <h1 className="text-2xl font-display font-bold text-foreground mb-3 leading-tight">
+              Encontre um Especialista da Beleza na sua cidade
+            </h1>
+            <p className="text-base text-muted-foreground mb-1">
+              Profissionais formados e certificados, prontos para transformar seu visual.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Use os filtros abaixo para encontrar o profissional ideal perto de você.
+            </p>
+          </div>
+        </div>
+
+        {/* === DESKTOP: image with overlay text === */}
+        <div className="hidden md:block relative w-full" style={{ aspectRatio: '1920/800' }}>
           <img
             src={heroBg}
             alt="Especialistas da Beleza"
-            className="hidden md:block w-full h-full object-cover"
+            className="w-full h-full object-cover"
           />
-          {/* Mobile image */}
-          <img
-            src={heroBgMobile}
-            alt="Especialistas da Beleza"
-            className="block md:hidden w-full h-full object-cover"
-          />
-          {/* Overlay for text readability on left side */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
-
-          {/* Text content positioned left */}
           <div className="absolute inset-0 flex items-center">
             <div className="container mx-auto px-4">
               <div className="max-w-xl">
@@ -67,7 +83,7 @@ const Index = () => {
                   <Sparkles className="h-4 w-4" />
                   Profissionais certificados
                 </span>
-                <h1 className="text-3xl md:text-5xl font-display font-bold text-white mb-4 leading-tight">
+                <h1 className="text-5xl font-display font-bold text-white mb-4 leading-tight">
                   Encontre um Especialista da Beleza na sua cidade
                 </h1>
                 <p className="text-lg text-white/85 mb-2">
