@@ -56,7 +56,7 @@ const Index = () => {
           </div>
           {/* Texto sobreposto (z-20) */}
           <div className="px-4 py-4 text-center -mt-24 relative z-20">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 text-white text-sm font-medium backdrop-blur-sm mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/25 text-white text-sm font-medium backdrop-blur-xl mb-4">
               <Sparkles className="h-4 w-4" />
               Profissionais certificados
             </span>
