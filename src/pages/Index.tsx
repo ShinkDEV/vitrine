@@ -40,27 +40,44 @@ const Index = () => {
       <Header />
 
       {/* Hero */}
-      <section className="relative py-16 md:py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent via-background to-muted opacity-60" />
-        <div className="container mx-auto px-4 relative z-10 text-center">
-          <div className="flex justify-center mb-6">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
-              <Sparkles className="h-4 w-4" />
-              Profissionais certificados
-            </span>
-          </div>
-          <h1 className="text-3xl md:text-5xl font-display font-bold text-foreground mb-4 max-w-3xl mx-auto leading-tight">
-            Encontre um Especialista da Beleza na sua cidade
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-2">
-            Profissionais formados e certificados, prontos para transformar seu visual com técnica, segurança e excelência.
-          </p>
-          <p className="text-sm text-muted-foreground mb-10">
-            Use os filtros abaixo para encontrar o profissional ideal perto de você.
-          </p>
+      <section className="relative overflow-hidden">
+        {/* Hero image full-width */}
+        <div className="relative w-full" style={{ aspectRatio: '1920/800' }}>
+          <img
+            src={heroBg}
+            alt="Especialistas da Beleza"
+            className="w-full h-full object-cover"
+          />
+          {/* Overlay for text readability on left side */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
 
+          {/* Text content positioned left */}
+          <div className="absolute inset-0 flex items-center">
+            <div className="container mx-auto px-4">
+              <div className="max-w-xl">
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 text-white text-sm font-medium backdrop-blur-sm mb-6">
+                  <Sparkles className="h-4 w-4" />
+                  Profissionais certificados
+                </span>
+                <h1 className="text-3xl md:text-5xl font-display font-bold text-white mb-4 leading-tight">
+                  Encontre um Especialista da Beleza na sua cidade
+                </h1>
+                <p className="text-lg text-white/85 mb-2">
+                  Profissionais formados e certificados, prontos para transformar seu visual com técnica, segurança e excelência.
+                </p>
+                <p className="text-sm text-white/70">
+                  Use os filtros abaixo para encontrar o profissional ideal perto de você.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search filters below hero */}
+        <div className="container mx-auto px-4 -mt-8 relative z-10">
           <SearchFilters onSearch={setFilters} />
         </div>
+        <div className="h-8" />
       </section>
 
       {/* Results */}
