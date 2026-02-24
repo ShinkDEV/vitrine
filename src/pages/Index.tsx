@@ -83,7 +83,7 @@ const Index = () => {
                   <Sparkles className="h-4 w-4" />
                   Profissionais certificados
                 </span>
-                <h1 className="text-5xl font-display font-bold text-white mb-4 leading-tight">
+                <h1 className="text-2xl lg:text-5xl font-display font-bold text-white mb-4 leading-tight">
                   Encontre um Especialista da Beleza na sua cidade
                 </h1>
                 <p className="text-lg text-white/85 mb-2">
