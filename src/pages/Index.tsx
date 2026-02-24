@@ -43,15 +43,19 @@ const Index = () => {
       {/* Hero */}
       <section className="relative overflow-hidden">
         {/* === MOBILE: image on top, text below === */}
-        <div className="block md:hidden">
-          <div className="relative w-full aspect-square">
+        <div className="block md:hidden relative">
+          {/* Fundo (z-0) */}
+          <div className="absolute inset-0 bg-background z-0" />
+          {/* Banner (z-10) */}
+          <div className="relative w-full aspect-square z-10">
             <img
               src={heroBgMobile}
               alt="Especialistas da Beleza"
               className="w-full h-full object-cover"
             />
           </div>
-          <div className="px-4 py-4 text-center bg-background -mt-24 relative z-10">
+          {/* Texto sobreposto (z-20) */}
+          <div className="px-4 py-4 text-center -mt-24 relative z-20">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
               <Sparkles className="h-4 w-4" />
               Profissionais certificados
