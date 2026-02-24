@@ -78,7 +78,7 @@ const Index = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
           <div className="absolute inset-0 flex items-center">
             <div className="container mx-auto px-4">
-              <div className="max-w-sm lg:max-w-xl">
+              <div className="max-w-[280px] lg:max-w-xl">
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 text-white text-sm font-medium backdrop-blur-sm mb-6">
                   <Sparkles className="h-4 w-4" />
                   Profissionais certificados
