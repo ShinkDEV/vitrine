@@ -244,7 +244,7 @@ const AdminBannerManager = () => {
                   Selecionar imagem
                 </Button>
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
-                {croppedBlob && <span className="text-xs text-green-600 font-medium">✓ Imagem recortada</span>}
+                {croppedBlob && <span className="text-xs text-primary font-medium">✓ Imagem recortada</span>}
               </div>
               {croppedBlob && (
                 <div className="mt-2 rounded-lg overflow-hidden border border-border">
