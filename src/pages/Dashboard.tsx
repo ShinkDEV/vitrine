@@ -84,6 +84,36 @@ const Dashboard = () => {
           <h1 className="text-2xl font-display font-bold text-foreground mb-1">Seu painel profissional</h1>
           <p className="text-muted-foreground mb-6">Bem-vindo à sua vitrine digital.</p>
 
+          {/* Portfolio Update Warning */}
+          {portfolioUpdateStatus === "expired" && (
+            <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/30 flex items-start gap-3 animate-fade-in">
+              <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-destructive">Atualização obrigatória do portfólio</p>
+                <p className="text-sm text-destructive/80 mt-1">
+                  Faz mais de 6 meses desde a última atualização do seu perfil. Atualize seu portfólio para continuar ativo na vitrine.
+                </p>
+                <Button variant="destructive" size="sm" className="mt-3" asChild>
+                  <Link to="/editar-perfil">Atualizar agora</Link>
+                </Button>
+              </div>
+            </div>
+          )}
+          {portfolioUpdateStatus === "warning" && (
+            <div className="mb-6 p-4 rounded-xl bg-yellow-50 border border-yellow-300 flex items-start gap-3 animate-fade-in">
+              <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-yellow-800">Seu portfólio precisa ser atualizado em breve</p>
+                <p className="text-sm text-yellow-700 mt-1">
+                  Atualize seu perfil e portfólio para manter seu perfil ativo na vitrine. A atualização é obrigatória a cada 6 meses.
+                </p>
+                <Button variant="outline" size="sm" className="mt-3 border-yellow-400 text-yellow-800 hover:bg-yellow-100" asChild>
+                  <Link to="/editar-perfil">Atualizar portfólio</Link>
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Profile Completion */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">

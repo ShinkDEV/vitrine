@@ -148,6 +148,7 @@ const EditProfile = () => {
           whatsapp_link: whatsappClean ? `https://wa.me/${whatsappClean}` : null,
           payment_methods: form.payment_methods,
           slug: cleanSlug,
+          last_portfolio_update: new Date().toISOString(),
         })
         .eq("id", professional.id);
       if (error) throw error;
