@@ -61,10 +61,23 @@ const AdminBannerManager = () => {
     onError: (err: any) => toast.error(err.message || "Erro ao atualizar."),
   });
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCropSrc(reader.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleCropComplete = (blob: Blob) => {
+    setCroppedBlob(blob);
+    setCropSrc(null);
+  };
+
   const handleCreateBanner = async () => {
-    const file = fileRef.current?.files?.[0];
-    if (!file) {
-      toast.error("Selecione uma imagem.");
+    if (!croppedBlob) {
+      toast.error("Selecione e recorte uma imagem.");
       return;
     }
 
@@ -74,11 +87,10 @@ const AdminBannerManager = () => {
       const token = session.data.session?.access_token;
       if (!token) throw new Error("Não autenticado.");
 
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `banners/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const path = `banners/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
 
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", croppedBlob, "banner.jpg");
       formData.append("path", path);
 
       const res = await fetch(
@@ -109,6 +121,7 @@ const AdminBannerManager = () => {
       setDialogOpen(false);
       setTitle("");
       setLinkUrl("");
+      setCroppedBlob(null);
       queryClient.invalidateQueries({ queryKey: ["admin-banners"] });
     } catch (err: any) {
       toast.error(err.message || "Erro ao criar banner.");
