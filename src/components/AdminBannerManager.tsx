@@ -22,6 +22,8 @@ const AdminBannerManager = () => {
   const [placement, setPlacement] = useState<string>("home");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
 
   const { data: banners, isLoading } = useQuery({
     queryKey: ["admin-banners", filterPlacement],
