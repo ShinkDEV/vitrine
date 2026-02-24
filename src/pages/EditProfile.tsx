@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Upload, ArrowLeft, Clock, FileText } from "lucide-react";
 import ProfileCropDialog from "@/components/ProfileCropDialog";
 import PortfolioCropDialog from "@/components/PortfolioCropDialog";
+import CertificatesSection from "@/components/CertificatesSection";
 
 const PAYMENT_OPTIONS = ["Pix", "Cartão de Crédito", "Cartão de Débito", "Dinheiro", "Transferência Bancária"];
 
