@@ -131,6 +131,7 @@ const EditProfile = () => {
         if (existing) throw new Error("Este username já está em uso. Escolha outro.");
       }
 
+      const whatsappClean = form.whatsapp_number.replace(/\D/g, "");
       const wasDeactivated = professional.status === "desativado";
       const { error } = await supabase
         .from("professionals")
