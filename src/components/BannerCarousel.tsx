@@ -24,7 +24,7 @@ const BannerCarousel = ({ placement }: BannerCarouselProps) => {
   if (!banners?.length) return null;
 
   return (
-    <section className="container mx-auto px-4 pb-8">
+    <section className="container mx-auto px-4 lg:px-16 pb-8">
       <div className="space-y-4">
         {banners.map((banner) => (
           <div key={banner.id} className="rounded-xl overflow-hidden shadow-card">
