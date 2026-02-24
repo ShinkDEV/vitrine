@@ -583,9 +583,18 @@ const EditProfile = () => {
 
             {/* Portfolio */}
             <div>
-              <h3 className="text-base font-display font-semibold text-foreground mb-3">
+              <h3 className="text-base font-display font-semibold text-foreground mb-1">
                 Portfólio ({professional?.portfolio_photos?.length ?? 0}/10 fotos)
               </h3>
+              <p className="text-xs text-muted-foreground mb-3">
+                Mínimo de 3 fotos obrigatórias para publicação.
+              </p>
+              {(professional?.portfolio_photos?.length ?? 0) < 3 && (
+                <div className="mb-3 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-sm text-destructive flex items-center gap-2">
+                  <span>⚠️</span>
+                  Adicione pelo menos {3 - (professional?.portfolio_photos?.length ?? 0)} foto(s) para completar o portfólio.
+                </div>
+              )}
               {professional?.portfolio_photos && professional.portfolio_photos.length > 0 && (
                 <div className="space-y-3 mb-3">
                   {professional.portfolio_photos
