@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import SearchFilters from "@/components/SearchFilters";
 import ProfessionalCard from "@/components/ProfessionalCard";
 
-import { Sparkles, SearchX } from "lucide-react";
+import { Sparkles, SearchX, BadgeCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BannerCarousel from "@/components/BannerCarousel";
 import Footer from "@/components/Footer";
@@ -59,6 +59,7 @@ const Index = () => {
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/25 text-primary text-sm font-semibold backdrop-blur-xl mb-4">
               <Sparkles className="h-4 w-4" />
               Profissionais certificados
+              <BadgeCheck className="h-4 w-4 text-blue-500" />
             </span>
             <h1 className="text-2xl font-display font-bold text-foreground mb-3 leading-tight">
               Encontre um Especialista<br />da Beleza na sua cidade
