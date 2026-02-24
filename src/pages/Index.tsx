@@ -89,9 +89,15 @@ const Index = () => {
           <div className="absolute inset-0 flex items-center">
             <div className="container mx-auto px-4 md:pl-16 lg:pl-4">
               <div className="max-w-[280px] lg:max-w-xl">
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 text-white text-sm font-medium backdrop-blur-sm mb-6">
-                  <Sparkles className="h-4 w-4" />
-                  Profissionais certificados
+                <span className="relative inline-flex items-center gap-2 rounded-full mb-6">
+                  <span className="absolute inset-0 rounded-full" style={{ background: 'linear-gradient(90deg, white, #d4d4d8)', padding: '1px' }}>
+                    <span className="block w-full h-full rounded-full bg-white/15 backdrop-blur-xl" />
+                  </span>
+                  <span className="relative z-10 inline-flex items-center gap-2 px-4 py-1.5 text-white text-sm font-semibold">
+                    <Sparkles className="h-4 w-4" />
+                    Profissionais certificados
+                    <BadgeCheck className="h-5 w-5 fill-blue-500 text-white [&>path:first-child]:stroke-blue-500" />
+                  </span>
                 </span>
                 <h1 className="text-2xl lg:text-5xl font-display font-bold text-white mb-4 leading-tight">
                   Encontre um Especialista da Beleza na sua cidade
