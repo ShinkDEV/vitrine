@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, DollarSign, CreditCard, MessageCircle } from "lucide-react";
+import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, CreditCard, MessageCircle, FileText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminBannerManager from "@/components/AdminBannerManager";
@@ -99,6 +99,21 @@ const Admin = () => {
       return data?.map((s) => s.seal_id) ?? [];
     },
     enabled: !!sealProId,
+  });
+
+  // Fetch certificates for previewed professional
+  const { data: previewCertificates } = useQuery({
+    queryKey: ["professional-certificates-admin", previewPro?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("professional_certificates")
+        .select("*")
+        .eq("professional_id", previewPro!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!previewPro?.id,
   });
 
   const toggleSeal = useMutation({
@@ -438,7 +453,6 @@ const Admin = () => {
                             <div className="flex gap-3 text-muted-foreground text-xs">
                               {s.price && (
                                 <span className="flex items-center gap-0.5">
-                                  <DollarSign className="h-3 w-3" />
                                   R$ {Number(s.price).toFixed(2)}
                                 </span>
                               )}
@@ -482,6 +496,34 @@ const Admin = () => {
                             <img src={p.photo_url} alt="Portfólio" className="w-full h-full object-cover" />
                           </div>
                         ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Certificates */}
+                {previewCertificates && previewCertificates.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                      <FileText className="h-4 w-4" />
+                      Certificados ({previewCertificates.length})
+                    </h4>
+                    <div className="space-y-1.5">
+                      {previewCertificates.map((cert: any) => (
+                        <button
+                          key={cert.id}
+                          onClick={async () => {
+                            const { data } = await supabase.storage
+                              .from("certificates")
+                              .createSignedUrl(cert.file_url, 300);
+                            if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+                          }}
+                          className="flex items-center gap-2 w-full text-left p-2 rounded-lg border border-border hover:bg-accent transition-colors"
+                        >
+                          <FileText className="h-4 w-4 text-primary flex-shrink-0" />
+                          <span className="text-sm text-foreground truncate flex-1">{cert.file_name}</span>
+                          <span className="text-xs text-muted-foreground">{new Date(cert.created_at).toLocaleDateString("pt-BR")}</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
                 )}

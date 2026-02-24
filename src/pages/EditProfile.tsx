@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Plus, Trash2, Upload, ArrowLeft, Clock } from "lucide-react";
+import { Plus, Trash2, Upload, ArrowLeft, Clock, FileText } from "lucide-react";
 import ProfileCropDialog from "@/components/ProfileCropDialog";
 import PortfolioCropDialog from "@/components/PortfolioCropDialog";
+import CertificatesSection from "@/components/CertificatesSection";
 
 const PAYMENT_OPTIONS = ["Pix", "Cartão de Crédito", "Cartão de Débito", "Dinheiro", "Transferência Bancária"];
 
@@ -634,6 +635,9 @@ const EditProfile = () => {
               </Button>
               <input id="portfolio-file-input" type="file" accept="image/*" multiple className="hidden" onChange={handlePortfolioUpload} disabled={uploading} />
             </div>
+
+            {/* Certificates */}
+            <CertificatesSection professionalId={professional?.id} userId={user?.id} />
 
             <Button type="submit" variant="gradient" className="w-full" size="lg" disabled={saveMutation.isPending}>
               {saveMutation.isPending ? "Salvando..." : "Salvar alterações"}
