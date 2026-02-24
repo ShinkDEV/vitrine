@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { toast } from "sonner";
 import { Plus, Trash2, Image, ExternalLink } from "lucide-react";
+import BannerCropDialog from "@/components/BannerCropDialog";
 
 const AdminBannerManager = () => {
   const { user } = useAuth();
@@ -21,6 +22,8 @@ const AdminBannerManager = () => {
   const [placement, setPlacement] = useState<string>("home");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
 
   const { data: banners, isLoading } = useQuery({
     queryKey: ["admin-banners", filterPlacement],
@@ -58,10 +61,23 @@ const AdminBannerManager = () => {
     onError: (err: any) => toast.error(err.message || "Erro ao atualizar."),
   });
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCropSrc(reader.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleCropComplete = (blob: Blob) => {
+    setCroppedBlob(blob);
+    setCropSrc(null);
+  };
+
   const handleCreateBanner = async () => {
-    const file = fileRef.current?.files?.[0];
-    if (!file) {
-      toast.error("Selecione uma imagem.");
+    if (!croppedBlob) {
+      toast.error("Selecione e recorte uma imagem.");
       return;
     }
 
@@ -71,11 +87,10 @@ const AdminBannerManager = () => {
       const token = session.data.session?.access_token;
       if (!token) throw new Error("Não autenticado.");
 
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `banners/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const path = `banners/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
 
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", croppedBlob, "banner.jpg");
       formData.append("path", path);
 
       const res = await fetch(
@@ -106,6 +121,7 @@ const AdminBannerManager = () => {
       setDialogOpen(false);
       setTitle("");
       setLinkUrl("");
+      setCroppedBlob(null);
       queryClient.invalidateQueries({ queryKey: ["admin-banners"] });
     } catch (err: any) {
       toast.error(err.message || "Erro ao criar banner.");
@@ -220,15 +236,23 @@ const AdminBannerManager = () => {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">
-                Imagem (1600×400px, proporção 4:1)
+                Imagem (proporção 4:1)
               </label>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
                   <Image className="h-4 w-4 mr-1" />
                   Selecionar imagem
                 </Button>
-                <input ref={fileRef} type="file" accept="image/*" className="hidden" />
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+                {croppedBlob && <span className="text-xs text-primary font-medium">✓ Imagem recortada</span>}
               </div>
+              {croppedBlob && (
+                <div className="mt-2 rounded-lg overflow-hidden border border-border">
+                  <AspectRatio ratio={4 / 1}>
+                    <img src={URL.createObjectURL(croppedBlob)} alt="Preview" className="w-full h-full object-cover" />
+                  </AspectRatio>
+                </div>
+              )}
             </div>
             <Button onClick={handleCreateBanner} disabled={uploading} className="w-full">
               {uploading ? "Enviando..." : "Criar Banner"}
@@ -236,6 +260,13 @@ const AdminBannerManager = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <BannerCropDialog
+        open={!!cropSrc}
+        imageSrc={cropSrc || ""}
+        onClose={() => setCropSrc(null)}
+        onCropComplete={handleCropComplete}
+      />
     </div>
   );
 };
