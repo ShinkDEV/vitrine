@@ -7,6 +7,8 @@ import ProfessionalCard from "@/components/ProfessionalCard";
 
 import { Sparkles, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import BannerCarousel from "@/components/BannerCarousel";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   const [filters, setFilters] = useState({ country: "", state: "", city: "", query: "" });
