@@ -7,6 +7,17 @@ import { MapPin, Clock, DollarSign, CreditCard, X, Copy, CalendarDays, ChevronLe
 import { useState } from "react";
 import { toast } from "sonner";
 
+const getPaymentIcon = (method: string): string => {
+  const lower = method.toLowerCase();
+  if (lower.includes("pix")) return "🟢";
+  if (lower.includes("crédito") || lower.includes("credito")) return "💳";
+  if (lower.includes("débito") || lower.includes("debito")) return "💳";
+  if (lower.includes("dinheiro")) return "💵";
+  if (lower.includes("transferência") || lower.includes("transferencia") || lower.includes("ted") || lower.includes("doc")) return "🏦";
+  if (lower.includes("boleto")) return "🧾";
+  return "💰";
+};
+
 const ProfessionalProfile = () => {
   const { slug } = useParams<{ slug: string }>();
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
@@ -248,14 +259,20 @@ const ProfessionalProfile = () => {
         {/* Payment Methods */}
         {professional.payment_methods && professional.payment_methods.length > 0 && (
           <div className="bg-card rounded-2xl shadow-card p-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-            <h2 className="text-lg font-display font-semibold text-foreground mb-4">Formas de pagamento</h2>
-            <div className="flex flex-wrap gap-2">
-              {professional.payment_methods.map((method) => (
-                <span key={method} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent text-accent-foreground text-sm font-medium">
-                  <CreditCard className="h-3.5 w-3.5" />
-                  {method}
-                </span>
-              ))}
+            <h2 className="text-lg font-display font-semibold text-foreground mb-4 flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Formas de pagamento
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              {professional.payment_methods.map((method) => {
+                const icon = getPaymentIcon(method);
+                return (
+                  <div key={method} className="flex items-center gap-3 p-3 rounded-xl bg-accent/50 border border-border/50">
+                    <span className="text-xl">{icon}</span>
+                    <span className="text-sm font-medium text-foreground">{method}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
