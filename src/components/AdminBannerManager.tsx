@@ -236,7 +236,7 @@ const AdminBannerManager = () => {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">
-                Imagem (proporção 4:1)
+                Imagem (1600×400px — proporção 4:1)
               </label>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
