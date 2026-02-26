@@ -93,7 +93,7 @@ const Index = () => {
                   <span className="absolute inset-0 rounded-full" style={{ background: 'linear-gradient(90deg, white, #d4d4d8)', padding: '1px' }}>
                     <span className="block w-full h-full rounded-full bg-white/15 backdrop-blur-xl" />
                   </span>
-                  <span className="relative z-10 inline-flex items-center gap-2 px-4 py-1.5 text-white text-sm font-semibold">
+                    <span className="relative z-10 inline-flex items-center gap-2 px-4 py-1.5 text-primary text-sm font-semibold">
                     <Sparkles className="h-4 w-4" />
                     Profissionais certificados
                     <BadgeCheck className="h-5 w-5 fill-blue-500 text-white [&>path:first-child]:stroke-blue-500" />
