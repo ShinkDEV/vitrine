@@ -280,7 +280,7 @@ const Admin = () => {
 
                     {/* Actions */}
                     <div className="flex gap-2 flex-shrink-0">
-                      {pro.status === "pendente" && (
+                      {pro.status === "pendente" && canApprove && (
                         <>
                           <Button
                             size="sm"
@@ -304,7 +304,7 @@ const Admin = () => {
                           </Button>
                         </>
                       )}
-                      {pro.status === "publicado" && (
+                      {pro.status === "publicado" && canApprove && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -315,7 +315,7 @@ const Admin = () => {
                           Pausar
                         </Button>
                       )}
-                      {pro.status === "pausado" && (
+                      {pro.status === "pausado" && canApprove && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -332,13 +332,15 @@ const Admin = () => {
                           Aguardando envio
                         </span>
                       )}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => { setSealProId(pro.id); setSealDialogOpen(true); }}
-                      >
-                        <Award className="h-4 w-4" />
-                      </Button>
+                      {canManageSeals && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => { setSealProId(pro.id); setSealDialogOpen(true); }}
+                        >
+                          <Award className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="ghost"
