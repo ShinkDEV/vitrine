@@ -52,6 +52,26 @@ const Admin = () => {
   const hasAccess = (userRoles?.length ?? 0) > 0;
   const isAdmin = userRoles?.includes("admin") ?? false;
 
+  // Fetch collaborator permissions (only for non-admins)
+  const { data: collabPerms } = useQuery({
+    queryKey: ["my-collab-permissions", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("collaborator_permissions")
+        .select("*")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user && hasAccess && !isAdmin,
+  });
+
+  // Permission helpers — admin has all permissions
+  const canApprove = isAdmin || (collabPerms?.can_approve_profiles ?? false);
+  const canManageSeals = isAdmin || (collabPerms?.can_manage_seals ?? false);
+  const canManageInvites = isAdmin || (collabPerms?.can_manage_invites ?? false);
+
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
     if (!authLoading && !roleLoading && user && !hasAccess) {
