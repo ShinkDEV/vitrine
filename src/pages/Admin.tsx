@@ -17,7 +17,7 @@ import AdminCollaboratorManager from "@/components/AdminCollaboratorManager";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   rascunho: { label: "Rascunho", color: "bg-muted text-muted-foreground" },
-  pendente: { label: "Pendente", color: "bg-yellow-100 text-yellow-800" },
+  pendente: { label: "Aguardando Aprovação", color: "bg-yellow-100 text-yellow-800" },
   publicado: { label: "Publicado", color: "bg-green-100 text-green-800" },
   pausado: { label: "Pausado", color: "bg-orange-100 text-orange-800" },
 };
@@ -215,7 +215,7 @@ const Admin = () => {
   };
 
   const filters = [
-    { value: "pendente", label: "Pendentes" },
+    { value: "pendente", label: "Aguardando Aprovação" },
     { value: "publicado", label: "Publicados" },
     { value: "pausado", label: "Pausados" },
     { value: "rascunho", label: "Rascunhos" },
