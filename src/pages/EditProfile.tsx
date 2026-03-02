@@ -46,9 +46,29 @@ const EditProfile = () => {
   const [pendingPortfolioFiles, setPendingPortfolioFiles] = useState<File[]>([]);
   const [currentPortfolioFileIndex, setCurrentPortfolioFileIndex] = useState(0);
 
+  // Check if user is collaborator only
+  const { data: userRoles, isLoading: rolesLoading } = useQuery({
+    queryKey: ["user-roles-edit", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      return data?.map((r) => r.role) ?? [];
+    },
+    enabled: !!user,
+  });
+
+  const isCollaboratorOnly = userRoles && !userRoles.includes("professional") && (userRoles.includes("colaborador") || userRoles.includes("admin"));
+
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
   }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    if (!rolesLoading && isCollaboratorOnly) navigate("/admin", { replace: true });
+  }, [rolesLoading, isCollaboratorOnly, navigate]);
 
   const { data: professional } = useQuery({
     queryKey: ["my-professional-edit", user?.id],
@@ -381,7 +401,7 @@ const EditProfile = () => {
     toast.success("Foto removida.");
   };
 
-  if (authLoading || !user) return null;
+  if (authLoading || !user || rolesLoading || isCollaboratorOnly) return null;
 
   return (
     <div className="min-h-screen bg-background">
