@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, CreditCard, MessageCircle, FileText } from "lucide-react";
+import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, CreditCard, MessageCircle, FileText, Copy, Mail } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminBannerManager from "@/components/AdminBannerManager";
@@ -96,6 +96,18 @@ const Admin = () => {
 
       const { data, error } = await query;
       if (error) throw error;
+
+      // Fetch emails from profiles table for all professionals
+      if (data && data.length > 0) {
+        const userIds = data.map((p) => p.user_id);
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, email")
+          .in("user_id", userIds);
+        const emailMap = new Map(profiles?.map((p) => [p.user_id, p.email]) ?? []);
+        return data.map((p) => ({ ...p, _email: emailMap.get(p.user_id) || null }));
+      }
+
       return data;
     },
     enabled: !!hasAccess,
