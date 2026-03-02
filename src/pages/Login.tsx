@@ -25,7 +25,7 @@ const Login = () => {
         .select("role")
         .eq("user_id", data.user.id);
       const roleList = roles?.map((r) => r.role) ?? [];
-      const isCollabOnly = !roleList.includes("professional") && (roleList.includes("colaborador") || roleList.includes("admin"));
+      const isCollabOnly = !roleList.includes("professional") && roleList.includes("colaborador") && !roleList.includes("admin");
       
       toast.success("Login realizado com sucesso!");
       navigate(isCollabOnly ? "/admin" : "/dashboard");

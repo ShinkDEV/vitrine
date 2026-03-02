@@ -60,7 +60,7 @@ const EditProfile = () => {
     enabled: !!user,
   });
 
-  const isCollaboratorOnly = userRoles && !userRoles.includes("professional") && (userRoles.includes("colaborador") || userRoles.includes("admin"));
+  const isCollaboratorOnly = userRoles && !userRoles.includes("professional") && userRoles.includes("colaborador") && !userRoles.includes("admin");
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
