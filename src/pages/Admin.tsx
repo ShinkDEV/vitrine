@@ -467,7 +467,20 @@ const Admin = () => {
                   </div>
                   <div>
                     <h3 className="text-lg font-display font-bold text-foreground">{previewPro.name}</h3>
-                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    {previewPro._email && (
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">{previewPro._email}</span>
+                        <button
+                          type="button"
+                          onClick={() => { navigator.clipboard.writeText(previewPro._email); toast.success("Email copiado!"); }}
+                          className="text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    )}
+                    <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
                       <MapPin className="h-3.5 w-3.5" />
                       {previewPro.city || "—"} / {previewPro.state || "—"}
                     </p>
