@@ -223,13 +223,24 @@ const EditProfile = () => {
     return data.url;
   };
 
+  const processFileForCrop = (file: File, setter: (src: string) => void) => {
+    const reader = new FileReader();
+    reader.onload = () => setter(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setCropImage(reader.result as string);
-    reader.readAsDataURL(file);
+    processFileForCrop(file, setCropImage);
     e.target.value = "";
+  };
+
+  const handleProfileDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file || !file.type.startsWith("image/")) return;
+    processFileForCrop(file, setCropImage);
   };
 
   const handleCropComplete = async (blob: Blob) => {
