@@ -62,15 +62,21 @@ const Register = () => {
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: { name },
-        },
-      });
-      if (error) throw error;
+      // Call edge function which creates the user AND sends branded confirmation email
+      const { data: fnData, error: fnError } = await supabase.functions.invoke(
+        "send-confirmation-email",
+        {
+          body: {
+            name,
+            email,
+            password,
+            redirectUrl: `${window.location.origin}/login`,
+          },
+        }
+      );
+
+      if (fnError) throw new Error(fnError.message || "Erro ao criar conta.");
+      if (fnData?.error) throw new Error(fnData.error);
 
       // Increment invite use count
       if (inviteId) {
@@ -86,16 +92,6 @@ const Register = () => {
             .eq("id", inviteId);
         }
       }
-
-      // Send confirmation email via Resend (fire and forget the welcome — it'll be sent after confirmation)
-      supabase.functions.invoke("send-confirmation-email", {
-        body: { name, email, redirectUrl: `${window.location.origin}/login` },
-      }).catch((err) => console.error("Confirmation email error:", err));
-
-      // Send welcome email too (fire and forget)
-      supabase.functions.invoke("send-welcome-email", {
-        body: { name, email },
-      }).catch((err) => console.error("Welcome email error:", err));
 
       toast.success("Conta criada! Verifique seu email para confirmar.");
       navigate("/login");
