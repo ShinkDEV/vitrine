@@ -53,6 +53,36 @@ export type Database = {
         }
         Relationships: []
       }
+      collaborator_permissions: {
+        Row: {
+          can_approve_profiles: boolean
+          can_manage_invites: boolean
+          can_manage_seals: boolean
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          can_approve_profiles?: boolean
+          can_manage_invites?: boolean
+          can_manage_seals?: boolean
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          can_approve_profiles?: boolean
+          can_manage_invites?: boolean
+          can_manage_seals?: boolean
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       invites: {
         Row: {
           code: string
