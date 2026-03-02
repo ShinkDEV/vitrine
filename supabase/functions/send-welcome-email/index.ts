@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "avisos@vitrine.escola.ro",
+        from: "Vitrine dos Especialistas da Beleza <avisos@escola.ro>",
         to: [email],
         subject: "Bem-vindo(a) à Vitrine dos Especialistas da Beleza! ✨",
         html,
