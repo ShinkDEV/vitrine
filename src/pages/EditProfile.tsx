@@ -223,13 +223,24 @@ const EditProfile = () => {
     return data.url;
   };
 
+  const processFileForCrop = (file: File, setter: (src: string) => void) => {
+    const reader = new FileReader();
+    reader.onload = () => setter(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setCropImage(reader.result as string);
-    reader.readAsDataURL(file);
+    processFileForCrop(file, setCropImage);
     e.target.value = "";
+  };
+
+  const handleProfileDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file || !file.type.startsWith("image/")) return;
+    processFileForCrop(file, setCropImage);
   };
 
   const handleCropComplete = async (blob: Blob) => {
@@ -266,11 +277,28 @@ const EditProfile = () => {
     const fileList = Array.from(files);
     setPendingPortfolioFiles(fileList);
     setCurrentPortfolioFileIndex(0);
-    // Load first file for cropping
-    const reader = new FileReader();
-    reader.onload = () => setPortfolioCropImage(reader.result as string);
-    reader.readAsDataURL(fileList[0]);
+    processFileForCrop(fileList[0], setPortfolioCropImage);
     e.target.value = "";
+  };
+
+  const handlePortfolioDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const files = e.dataTransfer.files;
+    if (!files || files.length === 0) return;
+    if (!professional) {
+      toast.error("Perfil profissional não encontrado.");
+      return;
+    }
+    const imageFiles = Array.from(files).filter(f => f.type.startsWith("image/"));
+    if (imageFiles.length === 0) return;
+    const currentCount = professional.portfolio_photos?.length ?? 0;
+    if (currentCount + imageFiles.length > 10) {
+      toast.error("Máximo de 10 fotos no portfólio.");
+      return;
+    }
+    setPendingPortfolioFiles(imageFiles);
+    setCurrentPortfolioFileIndex(0);
+    processFileForCrop(imageFiles[0], setPortfolioCropImage);
   };
 
   const handlePortfolioCropComplete = async (blob: Blob) => {
@@ -337,8 +365,12 @@ const EditProfile = () => {
           {/* Profile Photo */}
           <div className="mb-8">
             <label className="text-sm font-medium text-foreground mb-2 block">Foto de perfil</label>
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-border">
+            <div
+              className="flex items-center gap-4 p-4 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleProfileDrop}
+            >
+              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-border flex-shrink-0">
                 {professional?.profile_photo_url ? (
                   <img src={professional.profile_photo_url} alt="Perfil" className="w-full h-full object-cover" />
                 ) : (
@@ -347,15 +379,18 @@ const EditProfile = () => {
                   </div>
                 )}
               </div>
-              <label className="cursor-pointer">
-                <Button variant="outline" size="sm" asChild>
-                  <span>
-                    <Upload className="h-4 w-4 mr-1" />
-                    {uploading ? "Enviando..." : "Alterar foto"}
-                  </span>
-                </Button>
-                <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploading} />
-              </label>
+              <div className="flex flex-col gap-1.5">
+                <label className="cursor-pointer">
+                  <Button variant="outline" size="sm" asChild>
+                    <span>
+                      <Upload className="h-4 w-4 mr-1" />
+                      {uploading ? "Enviando..." : "Alterar foto"}
+                    </span>
+                  </Button>
+                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploading} />
+                </label>
+                <p className="text-xs text-muted-foreground">ou arraste uma imagem aqui</p>
+              </div>
             </div>
           </div>
 
@@ -629,10 +664,17 @@ const EditProfile = () => {
                   ))}
                 </div>
               )}
-              <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('portfolio-file-input')?.click()}>
-                  <Upload className="h-4 w-4 mr-1" />
-                  Adicionar fotos
-              </Button>
+              <div
+                className="flex flex-col items-center gap-2 p-6 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handlePortfolioDrop}
+                onClick={() => document.getElementById('portfolio-file-input')?.click()}
+              >
+                <Upload className="h-6 w-6 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground text-center">
+                  Clique ou arraste fotos aqui
+                </p>
+              </div>
               <input id="portfolio-file-input" type="file" accept="image/*" multiple className="hidden" onChange={handlePortfolioUpload} disabled={uploading} />
             </div>
 
