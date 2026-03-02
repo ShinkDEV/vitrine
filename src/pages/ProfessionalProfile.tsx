@@ -112,12 +112,7 @@ const ProfessionalProfile = () => {
 
       <div className="container mx-auto px-4 py-8 max-w-2xl space-y-6">
         {/* Profile status banner */}
-        {professional.status === "publicado" ? (
-          <div className="bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-xl px-5 py-3 text-sm font-medium flex items-center gap-2 animate-fade-in">
-            <span className="text-lg">✅</span>
-            Perfil Publicado
-          </div>
-        ) : (
+        {professional.status !== "publicado" && (
           <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-xl px-5 py-3 text-sm font-medium flex items-center gap-2 animate-fade-in">
             <span className="text-lg">👁️</span>
             Pré-visualização — Este perfil ainda não está publicado.
