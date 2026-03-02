@@ -52,6 +52,26 @@ const Admin = () => {
   const hasAccess = (userRoles?.length ?? 0) > 0;
   const isAdmin = userRoles?.includes("admin") ?? false;
 
+  // Fetch collaborator permissions (only for non-admins)
+  const { data: collabPerms } = useQuery({
+    queryKey: ["my-collab-permissions", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("collaborator_permissions")
+        .select("*")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user && hasAccess && !isAdmin,
+  });
+
+  // Permission helpers — admin has all permissions
+  const canApprove = isAdmin || (collabPerms?.can_approve_profiles ?? false);
+  const canManageSeals = isAdmin || (collabPerms?.can_manage_seals ?? false);
+  const canManageInvites = isAdmin || (collabPerms?.can_manage_invites ?? false);
+
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
     if (!authLoading && !roleLoading && user && !hasAccess) {
@@ -260,7 +280,7 @@ const Admin = () => {
 
                     {/* Actions */}
                     <div className="flex gap-2 flex-shrink-0">
-                      {pro.status === "pendente" && (
+                      {pro.status === "pendente" && canApprove && (
                         <>
                           <Button
                             size="sm"
@@ -284,7 +304,7 @@ const Admin = () => {
                           </Button>
                         </>
                       )}
-                      {pro.status === "publicado" && (
+                      {pro.status === "publicado" && canApprove && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -295,7 +315,7 @@ const Admin = () => {
                           Pausar
                         </Button>
                       )}
-                      {pro.status === "pausado" && (
+                      {pro.status === "pausado" && canApprove && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -312,13 +332,15 @@ const Admin = () => {
                           Aguardando envio
                         </span>
                       )}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => { setSealProId(pro.id); setSealDialogOpen(true); }}
-                      >
-                        <Award className="h-4 w-4" />
-                      </Button>
+                      {canManageSeals && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => { setSealProId(pro.id); setSealDialogOpen(true); }}
+                        >
+                          <Award className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="ghost"
@@ -337,8 +359,8 @@ const Admin = () => {
 
       <div className="container mx-auto px-4 pb-8 max-w-4xl space-y-8">
         {isAdmin && <AdminCollaboratorManager />}
-        <AdminInviteManager />
-        <AdminBannerManager />
+        {canManageInvites && <AdminInviteManager />}
+        {isAdmin && <AdminBannerManager />}
       </div>
 
       {/* Rejection reason dialog */}
@@ -536,7 +558,7 @@ const Admin = () => {
                 )}
 
                 {/* Admin actions */}
-                {previewPro.status === "pendente" && (
+                {previewPro.status === "pendente" && canApprove && (
                   <div className="flex gap-2 pt-2 border-t border-border">
                     <Button
                       size="sm"
