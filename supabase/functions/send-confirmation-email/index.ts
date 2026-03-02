@@ -76,7 +76,29 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Generate signup link — this creates the user AND generates the confirmation link
+    // Step 1: Create user via admin API (email NOT confirmed, no default email sent)
+    const { data: newUser, error: createError } =
+      await adminClient.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: false,
+        user_metadata: { name },
+      });
+
+    if (createError) {
+      // If user already exists, try to generate link for re-sending
+      if (createError.message?.includes("already been registered") || createError.message?.includes("already exists")) {
+        console.log("User already exists, generating new confirmation link");
+      } else {
+        console.error("User creation error:", createError);
+        return new Response(JSON.stringify({ error: createError.message || "Erro ao criar conta" }), {
+          status: 422,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // Step 2: Generate confirmation link (does NOT send any email)
     const { data: linkData, error: linkError } =
       await adminClient.auth.admin.generateLink({
         type: "signup",
@@ -104,8 +126,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Return the user data so the frontend can use it
-    const userId = linkData?.user?.id;
+    const userId = newUser?.user?.id || linkData?.user?.id;
 
     const html = emailWrapper(`
       <h1 style="margin:0 0 16px;color:#8b2560;font-size:24px;font-weight:700;">
