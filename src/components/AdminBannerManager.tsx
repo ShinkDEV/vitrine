@@ -241,6 +241,13 @@ const AdminBannerManager = () => {
                 <Button
                   size="sm"
                   variant="ghost"
+                  onClick={() => openEditDialog(banner)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
                   className="text-destructive"
                   onClick={() => {
                     if (confirm("Remover este banner?")) deleteBanner.mutate(banner.id);
@@ -254,11 +261,11 @@ const AdminBannerManager = () => {
         </div>
       )}
 
-      {/* Create Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* Create/Edit Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={(v) => { if (!v) closeDialog(); else setDialogOpen(v); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Novo Banner</DialogTitle>
+            <DialogTitle>{editingBanner ? "Editar Banner" : "Novo Banner"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -269,29 +276,39 @@ const AdminBannerManager = () => {
               <label className="text-sm font-medium text-foreground mb-1 block">Link (opcional)</label>
               <Input value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="https://..." />
             </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Exibir em</label>
-              <Select value={placement} onValueChange={setPlacement}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="home">Página Inicial</SelectItem>
-                  <SelectItem value="dashboard">Dashboard (profissionais)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {!editingBanner && (
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Exibir em</label>
+                <Select value={placement} onValueChange={setPlacement}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="home">Página Inicial</SelectItem>
+                    <SelectItem value="dashboard">Dashboard (profissionais)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">
                 Imagem (1600×400px — proporção 4:1)
+                {editingBanner && " — deixe vazio para manter a atual"}
               </label>
+              {editingBanner && !croppedBlob && (
+                <div className="mb-2 rounded-lg overflow-hidden border border-border">
+                  <AspectRatio ratio={4 / 1}>
+                    <img src={editingBanner.image_url} alt="Atual" className="w-full h-full object-cover" />
+                  </AspectRatio>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
                   <Image className="h-4 w-4 mr-1" />
-                  Selecionar imagem
+                  {editingBanner ? "Trocar imagem" : "Selecionar imagem"}
                 </Button>
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
-                {croppedBlob && <span className="text-xs text-primary font-medium">✓ Imagem recortada</span>}
+                {croppedBlob && <span className="text-xs text-primary font-medium">✓ Nova imagem recortada</span>}
               </div>
               {croppedBlob && (
                 <div className="mt-2 rounded-lg overflow-hidden border border-border">
@@ -301,8 +318,12 @@ const AdminBannerManager = () => {
                 </div>
               )}
             </div>
-            <Button onClick={handleCreateBanner} disabled={uploading} className="w-full">
-              {uploading ? "Enviando..." : "Criar Banner"}
+            <Button
+              onClick={editingBanner ? handleUpdateBanner : handleCreateBanner}
+              disabled={uploading || (!editingBanner && !croppedBlob)}
+              className="w-full"
+            >
+              {uploading ? "Enviando..." : editingBanner ? "Salvar alterações" : "Criar Banner"}
             </Button>
           </div>
         </DialogContent>
