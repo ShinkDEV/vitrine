@@ -7,12 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Trash2, UserPlus, Shield } from "lucide-react";
+import { Trash2, UserPlus, Shield, KeyRound } from "lucide-react";
 
 const AdminCollaboratorManager = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [resetUserId, setResetUserId] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -142,6 +145,37 @@ const AdminCollaboratorManager = () => {
     onError: (err: any) => toast.error(err.message || "Erro ao remover."),
   });
 
+  const resetPassword = useMutation({
+    mutationFn: async () => {
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+      if (!token) throw new Error("Não autenticado.");
+
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-collaborator`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ action: "reset_password", user_id: resetUserId, new_password: newPassword }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao redefinir senha.");
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Senha redefinida com sucesso!");
+      setResetDialogOpen(false);
+      setNewPassword("");
+      setResetUserId("");
+    },
+    onError: (err: any) => toast.error(err.message || "Erro ao redefinir senha."),
+  });
+
   const resetForm = () => {
     setName("");
     setEmail("");
@@ -192,18 +226,32 @@ const AdminCollaboratorManager = () => {
                     </p>
                   </div>
                 </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => {
-                    if (confirm("Remover este colaborador?"))
-                      removeCollaborator.mutate(collab.user_id);
-                  }}
-                  disabled={removeCollaborator.isPending}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    title="Redefinir senha"
+                    onClick={() => {
+                      setResetUserId(collab.user_id);
+                      setNewPassword("");
+                      setResetDialogOpen(true);
+                    }}
+                  >
+                    <KeyRound className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => {
+                      if (confirm("Remover este colaborador?"))
+                        removeCollaborator.mutate(collab.user_id);
+                    }}
+                    disabled={removeCollaborator.isPending}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
 
               <div className="flex flex-wrap gap-4">
@@ -285,6 +333,33 @@ const AdminCollaboratorManager = () => {
               className="w-full"
             >
               {createCollaborator.isPending ? "Criando..." : "Criar colaborador"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Redefinir Senha</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">Nova senha</label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+              />
+            </div>
+            <Button
+              onClick={() => resetPassword.mutate()}
+              disabled={resetPassword.isPending || newPassword.length < 6}
+              className="w-full"
+            >
+              {resetPassword.isPending ? "Redefinindo..." : "Redefinir senha"}
             </Button>
           </div>
         </DialogContent>
