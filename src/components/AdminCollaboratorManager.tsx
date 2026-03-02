@@ -338,6 +338,34 @@ const AdminCollaboratorManager = () => {
         </DialogContent>
       </Dialog>
     </div>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Redefinir Senha</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">Nova senha</label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+              />
+            </div>
+            <Button
+              onClick={() => resetPassword.mutate()}
+              disabled={resetPassword.isPending || newPassword.length < 6}
+              className="w-full"
+            >
+              {resetPassword.isPending ? "Redefinindo..." : "Redefinir senha"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 
