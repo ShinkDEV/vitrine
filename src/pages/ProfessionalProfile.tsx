@@ -302,6 +302,9 @@ const ProfessionalProfile = () => {
                   touchStartX.current = null;
                 }}
               >
+                <button
+                  onClick={() => setSelectedPhoto(current.photo_url)}
+                  className="w-full aspect-[3/4] rounded-xl overflow-hidden"
                 >
                   <img src={current.photo_url} alt={current.title || "Portfólio"} className="w-full h-full object-cover" />
                 </button>
