@@ -226,18 +226,32 @@ const AdminCollaboratorManager = () => {
                     </p>
                   </div>
                 </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => {
-                    if (confirm("Remover este colaborador?"))
-                      removeCollaborator.mutate(collab.user_id);
-                  }}
-                  disabled={removeCollaborator.isPending}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    title="Redefinir senha"
+                    onClick={() => {
+                      setResetUserId(collab.user_id);
+                      setNewPassword("");
+                      setResetDialogOpen(true);
+                    }}
+                  >
+                    <KeyRound className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => {
+                      if (confirm("Remover este colaborador?"))
+                        removeCollaborator.mutate(collab.user_id);
+                    }}
+                    disabled={removeCollaborator.isPending}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
 
               <div className="flex flex-wrap gap-4">
