@@ -54,10 +54,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, name, redirectUrl } = await req.json();
+    const { email, name, password, redirectUrl } = await req.json();
 
-    if (!email || !name) {
-      return new Response(JSON.stringify({ error: "Email e nome são obrigatórios" }), {
+    if (!email || !name || !password) {
+      return new Response(JSON.stringify({ error: "Email, nome e senha são obrigatórios" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -76,20 +76,22 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Generate email confirmation link using admin API
+    // Generate signup link — this creates the user AND generates the confirmation link
     const { data: linkData, error: linkError } =
       await adminClient.auth.admin.generateLink({
         type: "signup",
         email,
+        password,
         options: {
-          redirectTo: redirectUrl || "https://kind-logic.lovable.app/login",
+          data: { name },
+          redirectTo: redirectUrl || "https://vitrine.escola.ro/login",
         },
       });
 
     if (linkError) {
       console.error("Link generation error:", linkError);
-      return new Response(JSON.stringify({ error: "Erro ao gerar link de confirmação" }), {
-        status: 500,
+      return new Response(JSON.stringify({ error: linkError.message || "Erro ao gerar link de confirmação" }), {
+        status: 422,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -101,6 +103,9 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Return the user data so the frontend can use it
+    const userId = linkData?.user?.id;
 
     const html = emailWrapper(`
       <h1 style="margin:0 0 16px;color:#8b2560;font-size:24px;font-weight:700;">
@@ -141,7 +146,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ success: true, id: data.id }), {
+    return new Response(JSON.stringify({ success: true, id: data.id, userId }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
