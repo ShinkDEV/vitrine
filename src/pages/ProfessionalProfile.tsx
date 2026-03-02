@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { MapPin, Clock, CreditCard, X, Copy, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 
 const getPaymentIcon = (method: string): string => {
@@ -22,6 +22,7 @@ const ProfessionalProfile = () => {
   const { slug } = useParams<{ slug: string }>();
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
 
   const { data: professional, isLoading } = useQuery({
     queryKey: ["professional", slug],
@@ -288,10 +289,19 @@ const ProfessionalProfile = () => {
           return (
             <div className="bg-card rounded-2xl shadow-card p-6 animate-fade-in" style={{ animationDelay: "0.4s" }}>
               <h2 className="text-lg font-display font-semibold text-foreground mb-4">Portfólio</h2>
-              <div className="relative">
-                <button
-                  onClick={() => setSelectedPhoto(current.photo_url)}
-                  className="w-full aspect-[3/4] rounded-xl overflow-hidden"
+              <div
+                className="relative"
+                onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+                onTouchEnd={(e) => {
+                  if (touchStartX.current === null) return;
+                  const diff = touchStartX.current - e.changedTouches[0].clientX;
+                  if (Math.abs(diff) > 50) {
+                    if (diff > 0) setCarouselIndex((carouselIndex + 1) % sortedPhotos.length);
+                    else setCarouselIndex((carouselIndex - 1 + sortedPhotos.length) % sortedPhotos.length);
+                  }
+                  touchStartX.current = null;
+                }}
+              >
                 >
                   <img src={current.photo_url} alt={current.title || "Portfólio"} className="w-full h-full object-cover" />
                 </button>
