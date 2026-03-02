@@ -16,10 +16,19 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error, data } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      
+      // Check if user is collaborator/admin only (no professional role)
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.user.id);
+      const roleList = roles?.map((r) => r.role) ?? [];
+      const isCollabOnly = !roleList.includes("professional") && (roleList.includes("colaborador") || roleList.includes("admin"));
+      
       toast.success("Login realizado com sucesso!");
-      navigate("/dashboard");
+      navigate(isCollabOnly ? "/admin" : "/dashboard");
     } catch (err: any) {
       const msg = err.message || "";
       const translated =
