@@ -359,8 +359,8 @@ const Admin = () => {
 
       <div className="container mx-auto px-4 pb-8 max-w-4xl space-y-8">
         {isAdmin && <AdminCollaboratorManager />}
-        <AdminInviteManager />
-        <AdminBannerManager />
+        {canManageInvites && <AdminInviteManager />}
+        {isAdmin && <AdminBannerManager />}
       </div>
 
       {/* Rejection reason dialog */}
@@ -558,7 +558,7 @@ const Admin = () => {
                 )}
 
                 {/* Admin actions */}
-                {previewPro.status === "pendente" && (
+                {previewPro.status === "pendente" && canApprove && (
                   <div className="flex gap-2 pt-2 border-t border-border">
                     <Button
                       size="sm"
