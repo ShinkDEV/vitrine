@@ -513,7 +513,12 @@ const Admin = () => {
                 {previewPro.whatsapp_number && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MessageCircle className="h-4 w-4" />
-                    <span>WhatsApp: {previewPro.whatsapp_number}</span>
+                    <span>WhatsApp: {(() => {
+                      const raw = previewPro.whatsapp_number.replace(/^55/, "");
+                      if (raw.length === 11) return `+55 (${raw.slice(0,2)}) ${raw.slice(2,7)}-${raw.slice(7)}`;
+                      if (raw.length === 10) return `+55 (${raw.slice(0,2)}) ${raw.slice(2,6)}-${raw.slice(6)}`;
+                      return `+55 ${raw}`;
+                    })()}</span>
                   </div>
                 )}
 
