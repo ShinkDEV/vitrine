@@ -7,6 +7,51 @@ import { Upload, Trash2, FileText } from "lucide-react";
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "application/pdf"];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_DIMENSION = 2048;
+
+const compressImage = (file: File): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith("image/")) return resolve(file);
+    if (file.size <= MAX_FILE_SIZE) return resolve(file);
+
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+        const ratio = Math.min(MAX_DIMENSION / width, MAX_DIMENSION / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, width, height);
+
+      let quality = 0.8;
+      const tryCompress = () => {
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return reject(new Error("Falha na compressão"));
+            if (blob.size <= MAX_FILE_SIZE || quality <= 0.3) {
+              resolve(new File([blob], file.name, { type: "image/jpeg" }));
+            } else {
+              quality -= 0.1;
+              tryCompress();
+            }
+          },
+          "image/jpeg",
+          quality
+        );
+      };
+      tryCompress();
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Erro ao processar imagem")); };
+    img.src = url;
+  });
+};
 
 interface Props {
   professionalId?: string;
@@ -40,23 +85,35 @@ const CertificatesSection = ({ professionalId, userId }: Props) => {
       toast.error("Formato não aceito. Use JPG, PNG ou PDF.");
       return;
     }
-    if (file.size > MAX_FILE_SIZE) {
+
+    // Compress images that exceed 5MB
+    let processedFile = file;
+    if (file.type.startsWith("image/") && file.size > MAX_FILE_SIZE) {
+      try {
+        toast.info("Comprimindo imagem...");
+        processedFile = await compressImage(file);
+      } catch {
+        toast.error("Erro ao comprimir imagem. Tente um arquivo menor.");
+        return;
+      }
+    }
+
+    if (processedFile.size > MAX_FILE_SIZE) {
       toast.error("Arquivo muito grande. Máximo 5MB.");
       return;
     }
 
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
+      const ext = processedFile.name.split(".").pop();
       const path = `certificates/${userId}/${Date.now()}.${ext}`;
 
-      // Upload to R2 via edge function
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
       if (!token) throw new Error("Não autenticado.");
 
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", processedFile);
       formData.append("path", path);
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -73,9 +130,9 @@ const CertificatesSection = ({ professionalId, userId }: Props) => {
         .from("professional_certificates")
         .insert({
           professional_id: professionalId,
-          file_name: file.name,
+          file_name: file.name, // Keep original name
           file_url: result.url,
-          file_type: file.type,
+          file_type: processedFile.type,
         });
       if (insertError) throw insertError;
 
