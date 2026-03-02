@@ -540,8 +540,13 @@ const EditProfile = () => {
                     <span className="text-sm text-muted-foreground font-medium">+55</span>
                   </div>
                   <Input
-                    placeholder="11999999999"
-                    value={form.whatsapp_number.replace(/^55/, "")}
+                    placeholder="(11) 98765-4321"
+                    value={(() => {
+                      const raw = form.whatsapp_number.replace(/^55/, "");
+                      if (raw.length <= 2) return raw.replace(/(\d{0,2})/, "($1");
+                      if (raw.length <= 7) return raw.replace(/(\d{2})(\d{0,5})/, "($1) $2");
+                      return raw.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3");
+                    })()}
                     onChange={(e) => {
                       const digits = e.target.value.replace(/\D/g, "").slice(0, 11);
                       setForm({ ...form, whatsapp_number: "55" + digits });
