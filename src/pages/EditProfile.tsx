@@ -38,7 +38,7 @@ const EditProfile = () => {
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [services, setServices] = useState<{ id?: string; title: string; price: string; priceOnRequest: boolean }[]>([]);
   const [workingHours, setWorkingHours] = useState<{ day: number; enabled: boolean; open: string; close: string }[]>(
-    Array.from({ length: 7 }, (_, i) => ({ day: i, enabled: false, open: "09:00", close: "18:00" }))
+    Array.from({ length: 7 }, (_, i) => ({ day: i, enabled: false, open: "10:00", close: "20:00" }))
   );
   const [uploading, setUploading] = useState(false);
   const [cropImage, setCropImage] = useState<string | null>(null);
@@ -113,7 +113,7 @@ const EditProfile = () => {
           const found = existingHours.find((h) => h.day_of_week === i);
           return found
             ? { day: i, enabled: true, open: found.open_time.slice(0, 5), close: found.close_time.slice(0, 5) }
-            : { day: i, enabled: false, open: "09:00", close: "18:00" };
+            : { day: i, enabled: false, open: "10:00", close: "20:00" };
         })
       );
     }
