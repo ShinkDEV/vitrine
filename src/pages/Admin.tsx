@@ -273,8 +273,21 @@ const Admin = () => {
                           </div>
                         )}
                       </div>
-                      <div className="min-w-0">
+                       <div className="min-w-0">
                         <p className="font-medium text-foreground truncate">{pro.name}</p>
+                        {pro._email && (
+                          <div className="flex items-center gap-1">
+                            <Mail className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                            <span className="text-xs text-muted-foreground truncate">{pro._email}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(pro._email); toast.success("Email copiado!"); }}
+                              className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </button>
+                          </div>
+                        )}
                         <p className="text-xs text-muted-foreground">
                           {pro.city && pro.state ? `${pro.city}, ${pro.state}` : "Localização não definida"}
                           {" · "}
