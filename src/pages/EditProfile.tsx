@@ -401,7 +401,7 @@ const EditProfile = () => {
     toast.success("Foto removida.");
   };
 
-  if (authLoading || !user) return null;
+  if (authLoading || !user || rolesLoading || isCollaboratorOnly) return null;
 
   return (
     <div className="min-h-screen bg-background">
