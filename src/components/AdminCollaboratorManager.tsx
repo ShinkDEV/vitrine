@@ -13,6 +13,9 @@ const AdminCollaboratorManager = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [resetUserId, setResetUserId] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
