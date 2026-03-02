@@ -34,8 +34,8 @@ const Admin = () => {
   const [sealProId, setSealProId] = useState<string | null>(null);
   const [previewPro, setPreviewPro] = useState<any | null>(null);
 
-  // Check if user is admin
-  const { data: hasAccess, isLoading: roleLoading } = useQuery({
+  // Check if user is admin or colaborador
+  const { data: userRoles, isLoading: roleLoading } = useQuery({
     queryKey: ["is-admin-or-colaborador", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -44,7 +44,7 @@ const Admin = () => {
         .eq("user_id", user!.id)
         .in("role", ["admin", "colaborador"]);
       if (error) throw error;
-      return (data?.length ?? 0) > 0;
+      return data?.map((r) => r.role) ?? [];
     },
     enabled: !!user,
   });
