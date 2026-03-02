@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 
 const CUSTOM_DOMAIN = "https://vitrine.escola.ro";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Copy, Plus, Trash2, Link2, Users } from "lucide-react";
 
@@ -13,6 +19,10 @@ const AdminInviteManager = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [customCode, setCustomCode] = useState("");
+  const [lifetime, setLifetime] = useState(false);
+  const [expiresAt, setExpiresAt] = useState<Date | undefined>(
+    new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  );
 
   const { data: invites, isLoading } = useQuery({
     queryKey: ["admin-invites"],
@@ -30,6 +40,11 @@ const AdminInviteManager = () => {
     mutationFn: async (code?: string) => {
       const insertData: any = { created_by: user!.id };
       if (code) insertData.code = code;
+      if (!lifetime && expiresAt) {
+        insertData.expires_at = expiresAt.toISOString();
+      } else {
+        insertData.expires_at = null;
+      }
       const { data, error } = await supabase
         .from("invites")
         .insert(insertData)
@@ -67,7 +82,7 @@ const AdminInviteManager = () => {
   };
 
   const getStatus = (invite: any) => {
-    const expired = new Date(invite.expires_at) < new Date();
+    const expired = invite.expires_at && new Date(invite.expires_at) < new Date();
     const maxReached = invite.max_uses && invite.use_count >= invite.max_uses;
     if (expired) return { label: "Expirado", color: "bg-red-100 text-red-800" };
     if (maxReached) return { label: "Esgotado", color: "bg-muted text-muted-foreground" };
@@ -83,22 +98,62 @@ const AdminInviteManager = () => {
         Gere links de convite reutilizáveis para novos profissionais se cadastrarem.
       </p>
 
-      <div className="flex gap-2 mb-6">
-        <Input
-          placeholder="Código personalizado (opcional)"
-          value={customCode}
-          onChange={(e) => setCustomCode(e.target.value.replace(/\s/g, "-").toLowerCase())}
-          className="flex-1 max-w-xs"
-        />
+      {/* Create form */}
+      <div className="space-y-3 mb-6 p-4 border border-border rounded-xl">
+        <div className="flex gap-2">
+          <Input
+            placeholder="Código personalizado (opcional)"
+            value={customCode}
+            onChange={(e) => setCustomCode(e.target.value.replace(/\s/g, "-").toLowerCase())}
+            className="flex-1"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Switch checked={lifetime} onCheckedChange={setLifetime} />
+            <span className="text-sm text-foreground font-medium">Vitalício (sem expiração)</span>
+          </label>
+
+          {!lifetime && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "justify-start text-left font-normal",
+                    !expiresAt && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="h-4 w-4 mr-2" />
+                  {expiresAt ? format(expiresAt, "dd/MM/yyyy") : "Selecionar data"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={expiresAt}
+                  onSelect={setExpiresAt}
+                  disabled={(date) => date < new Date()}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          )}
+        </div>
+
         <Button
           onClick={() => createInvite.mutate(customCode.trim() || undefined)}
-          disabled={createInvite.isPending}
+          disabled={createInvite.isPending || (!lifetime && !expiresAt)}
         >
           <Plus className="h-4 w-4 mr-1" />
           Gerar convite
         </Button>
       </div>
 
+      {/* List */}
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Carregando...</p>
       ) : !invites?.length ? (
@@ -130,7 +185,9 @@ const AdminInviteManager = () => {
                       Criado em {new Date(invite.created_at).toLocaleDateString("pt-BR")}
                     </span>
                     <span>
-                      Expira em {new Date(invite.expires_at).toLocaleDateString("pt-BR")}
+                      {invite.expires_at
+                        ? `Expira em ${new Date(invite.expires_at).toLocaleDateString("pt-BR")}`
+                        : "♾️ Vitalício"}
                     </span>
                   </div>
                 </div>

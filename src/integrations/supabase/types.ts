@@ -59,7 +59,7 @@ export type Database = {
           created_at: string
           created_by: string
           email: string | null
-          expires_at: string
+          expires_at: string | null
           id: string
           max_uses: number | null
           use_count: number
@@ -71,7 +71,7 @@ export type Database = {
           created_at?: string
           created_by: string
           email?: string | null
-          expires_at?: string
+          expires_at?: string | null
           id?: string
           max_uses?: number | null
           use_count?: number
@@ -83,7 +83,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           email?: string | null
-          expires_at?: string
+          expires_at?: string | null
           id?: string
           max_uses?: number | null
           use_count?: number
