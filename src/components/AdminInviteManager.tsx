@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+const CUSTOM_DOMAIN = "https://vitrine.escola.ro";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ const AdminInviteManager = () => {
       return data;
     },
     onSuccess: (data) => {
-      const link = `${window.location.origin}/cadastro?invite=${data.code}`;
+      const link = `${CUSTOM_DOMAIN}/cadastro?invite=${data.code}`;
       navigator.clipboard.writeText(link);
       toast.success("Convite criado e link copiado!");
       queryClient.invalidateQueries({ queryKey: ["admin-invites"] });
