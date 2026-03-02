@@ -32,7 +32,7 @@ const Register = () => {
           .eq("code", inviteCode)
           .maybeSingle();
 
-        if (error || !data || new Date(data.expires_at) < new Date() || (data.max_uses && data.use_count >= data.max_uses)) {
+        if (error || !data || (data.expires_at && new Date(data.expires_at) < new Date()) || (data.max_uses && data.use_count >= data.max_uses)) {
           setInviteValid(false);
         } else {
           setInviteValid(true);
