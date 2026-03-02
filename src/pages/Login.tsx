@@ -21,7 +21,18 @@ const Login = () => {
       toast.success("Login realizado com sucesso!");
       navigate("/dashboard");
     } catch (err: any) {
-      toast.error(err.message || "Erro ao fazer login.");
+      const msg = err.message || "";
+      const translated =
+        msg.includes("Invalid login credentials")
+          ? "Email ou senha incorretos."
+          : msg.includes("Email not confirmed")
+          ? "Seu email ainda não foi confirmado. Verifique sua caixa de entrada."
+          : msg.includes("Invalid Refresh Token")
+          ? "Sessão expirada. Faça login novamente."
+          : msg.includes("Too many requests")
+          ? "Muitas tentativas. Aguarde alguns minutos e tente novamente."
+          : "Erro ao fazer login.";
+      toast.error(translated);
     } finally {
       setLoading(false);
     }
