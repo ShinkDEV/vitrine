@@ -664,10 +664,17 @@ const EditProfile = () => {
                   ))}
                 </div>
               )}
-              <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('portfolio-file-input')?.click()}>
-                  <Upload className="h-4 w-4 mr-1" />
-                  Adicionar fotos
-              </Button>
+              <div
+                className="flex flex-col items-center gap-2 p-6 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handlePortfolioDrop}
+                onClick={() => document.getElementById('portfolio-file-input')?.click()}
+              >
+                <Upload className="h-6 w-6 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground text-center">
+                  Clique ou arraste fotos aqui
+                </p>
+              </div>
               <input id="portfolio-file-input" type="file" accept="image/*" multiple className="hidden" onChange={handlePortfolioUpload} disabled={uploading} />
             </div>
 
