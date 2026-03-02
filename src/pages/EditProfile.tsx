@@ -98,7 +98,7 @@ const EditProfile = () => {
   });
 
   useEffect(() => {
-    if (professional) {
+    if (professional && !formInitialized.current) {
       setForm({
         name: professional.name || "",
         bio: professional.bio || "",
