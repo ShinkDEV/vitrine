@@ -216,9 +216,13 @@ const ProfessionalProfile = () => {
                   <div key={service.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                     <span className="font-medium text-foreground">{service.title}</span>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      {service.price && (
+                      {service.price != null && service.price > 0 ? (
                         <span className="flex items-center gap-1">
                           R$ {Number(service.price).toFixed(2)}
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 italic">
+                          Sob Consulta
                         </span>
                       )}
                       {service.duration_minutes && (
