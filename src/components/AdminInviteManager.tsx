@@ -1,16 +1,13 @@
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Copy, Plus, Trash2, Link2, Mail } from "lucide-react";
+import { Copy, Plus, Trash2, Link2, Users } from "lucide-react";
 
 const AdminInviteManager = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [email, setEmail] = useState("");
 
   const { data: invites, isLoading } = useQuery({
     queryKey: ["admin-invites"],
@@ -25,13 +22,10 @@ const AdminInviteManager = () => {
   });
 
   const createInvite = useMutation({
-    mutationFn: async (inviteEmail?: string) => {
+    mutationFn: async () => {
       const { data, error } = await supabase
         .from("invites")
-        .insert({
-          created_by: user!.id,
-          email: inviteEmail || null,
-        })
+        .insert({ created_by: user!.id })
         .select()
         .single();
       if (error) throw error;
@@ -42,7 +36,6 @@ const AdminInviteManager = () => {
       navigator.clipboard.writeText(link);
       toast.success("Convite criado e link copiado!");
       queryClient.invalidateQueries({ queryKey: ["admin-invites"] });
-      setEmail("");
     },
     onError: (err: any) => toast.error(err.message || "Erro ao criar convite."),
   });
@@ -66,9 +59,11 @@ const AdminInviteManager = () => {
   };
 
   const getStatus = (invite: any) => {
-    if (invite.used_by) return { label: "Usado", color: "bg-green-100 text-green-800" };
-    if (new Date(invite.expires_at) < new Date()) return { label: "Expirado", color: "bg-red-100 text-red-800" };
-    return { label: "Pendente", color: "bg-yellow-100 text-yellow-800" };
+    const expired = new Date(invite.expires_at) < new Date();
+    const maxReached = invite.max_uses && invite.use_count >= invite.max_uses;
+    if (expired) return { label: "Expirado", color: "bg-red-100 text-red-800" };
+    if (maxReached) return { label: "Esgotado", color: "bg-muted text-muted-foreground" };
+    return { label: "Ativo", color: "bg-green-100 text-green-800" };
   };
 
   return (
@@ -77,27 +72,19 @@ const AdminInviteManager = () => {
         Convites
       </h2>
       <p className="text-sm text-muted-foreground mb-6">
-        Gere links de convite para novos profissionais se cadastrarem.
+        Gere links de convite reutilizáveis para novos profissionais se cadastrarem.
       </p>
 
-      {/* Create invite */}
-      <div className="flex gap-2 mb-6">
-        <Input
-          placeholder="Email do profissional (opcional)"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="flex-1"
-        />
+      <div className="mb-6">
         <Button
-          onClick={() => createInvite.mutate(email.trim() || undefined)}
+          onClick={() => createInvite.mutate()}
           disabled={createInvite.isPending}
         >
           <Plus className="h-4 w-4 mr-1" />
-          Gerar convite
+          Gerar link de convite
         </Button>
       </div>
 
-      {/* List */}
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Carregando...</p>
       ) : !invites?.length ? (
@@ -106,6 +93,7 @@ const AdminInviteManager = () => {
         <div className="space-y-3">
           {invites.map((invite) => {
             const status = getStatus(invite);
+            const isActive = status.label === "Ativo";
             return (
               <div
                 key={invite.id}
@@ -119,13 +107,11 @@ const AdminInviteManager = () => {
                       {status.label}
                     </span>
                   </div>
-                  <div className="flex gap-3 text-xs text-muted-foreground">
-                    {invite.email && (
-                      <span className="flex items-center gap-1">
-                        <Mail className="h-3 w-3" />
-                        {invite.email}
-                      </span>
-                    )}
+                  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Users className="h-3 w-3" />
+                      {invite.use_count} uso(s){invite.max_uses ? ` / ${invite.max_uses}` : ""}
+                    </span>
                     <span>
                       Criado em {new Date(invite.created_at).toLocaleDateString("pt-BR")}
                     </span>
@@ -135,22 +121,20 @@ const AdminInviteManager = () => {
                   </div>
                 </div>
                 <div className="flex gap-1.5 flex-shrink-0">
-                  {!invite.used_by && new Date(invite.expires_at) > new Date() && (
+                  {isActive && (
                     <Button size="sm" variant="outline" onClick={() => copyLink(invite.code)}>
                       <Copy className="h-3.5 w-3.5" />
                     </Button>
                   )}
-                  {!invite.used_by && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => deleteInvite.mutate(invite.id)}
-                      disabled={deleteInvite.isPending}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => deleteInvite.mutate(invite.id)}
+                    disabled={deleteInvite.isPending}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
               </div>
             );
