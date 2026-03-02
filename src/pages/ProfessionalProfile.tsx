@@ -201,7 +201,7 @@ const ProfessionalProfile = () => {
         {professional.bio && (
           <div className="bg-card rounded-2xl shadow-card p-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
             <h2 className="text-lg font-display font-semibold text-foreground mb-3">Sobre o profissional</h2>
-            <p className="text-muted-foreground leading-relaxed">{professional.bio}</p>
+            <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{professional.bio}</p>
           </div>
         )}
 
