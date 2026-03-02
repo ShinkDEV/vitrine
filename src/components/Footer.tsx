@@ -64,12 +64,12 @@ const Footer = () => {
           <p className="text-xs text-muted-foreground">
             Developed by:{" "}
             <a
-              href="https://instagram.com/eduardofelyx"
+              href="https://instagram.com/emetsoftware"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-foreground transition-colors underline"
             >
-              @EduardoFelyx
+              Emet Software
             </a>
           </p>
         </div>
