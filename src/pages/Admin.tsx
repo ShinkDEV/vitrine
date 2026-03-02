@@ -255,7 +255,8 @@ const Admin = () => {
             <p className="text-muted-foreground text-sm">Nenhum profissional encontrado.</p>
           ) : (
             <div className="space-y-4">
-              {professionals.map((pro) => {
+              {professionals.map((rawPro) => {
+                const pro = rawPro as typeof rawPro & { _email?: string | null };
                 const statusInfo = STATUS_LABELS[pro.status] || STATUS_LABELS.rascunho;
                 return (
                   <div
