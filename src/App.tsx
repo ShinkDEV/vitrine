@@ -40,6 +40,8 @@ const App = () => (
                 <Route path="/termos-de-uso" element={<TermsOfUse />} />
                 <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
                 <Route path="/isencao-de-responsabilidade" element={<Disclaimer />} />
+                <Route path="/esqueci-senha" element={<ForgotPassword />} />
+                <Route path="/redefinir-senha" element={<ResetPassword />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
