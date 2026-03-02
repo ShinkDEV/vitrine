@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Trash2, UserPlus, Shield } from "lucide-react";
+import { Trash2, UserPlus, Shield, KeyRound } from "lucide-react";
 
 const AdminCollaboratorManager = () => {
   const { user } = useAuth();
