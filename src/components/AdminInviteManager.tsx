@@ -4,12 +4,14 @@ const CUSTOM_DOMAIN = "https://vitrine.escola.ro";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Copy, Plus, Trash2, Link2, Users } from "lucide-react";
 
 const AdminInviteManager = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [customCode, setCustomCode] = useState("");
 
   const { data: invites, isLoading } = useQuery({
     queryKey: ["admin-invites"],
@@ -24,10 +26,12 @@ const AdminInviteManager = () => {
   });
 
   const createInvite = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (code?: string) => {
+      const insertData: any = { created_by: user!.id };
+      if (code) insertData.code = code;
       const { data, error } = await supabase
         .from("invites")
-        .insert({ created_by: user!.id })
+        .insert(insertData)
         .select()
         .single();
       if (error) throw error;
@@ -38,7 +42,7 @@ const AdminInviteManager = () => {
       navigator.clipboard.writeText(link);
       toast.success("Convite criado e link copiado!");
       queryClient.invalidateQueries({ queryKey: ["admin-invites"] });
-    },
+      setCustomCode("");
     onError: (err: any) => toast.error(err.message || "Erro ao criar convite."),
   });
 
@@ -77,13 +81,19 @@ const AdminInviteManager = () => {
         Gere links de convite reutilizáveis para novos profissionais se cadastrarem.
       </p>
 
-      <div className="mb-6">
+      <div className="flex gap-2 mb-6">
+        <Input
+          placeholder="Código personalizado (opcional)"
+          value={customCode}
+          onChange={(e) => setCustomCode(e.target.value.replace(/\s/g, "-").toLowerCase())}
+          className="flex-1 max-w-xs"
+        />
         <Button
-          onClick={() => createInvite.mutate()}
+          onClick={() => createInvite.mutate(customCode.trim() || undefined)}
           disabled={createInvite.isPending}
         >
           <Plus className="h-4 w-4 mr-1" />
-          Gerar link de convite
+          Gerar convite
         </Button>
       </div>
 
