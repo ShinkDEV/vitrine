@@ -43,6 +43,7 @@ const AdminInviteManager = () => {
       toast.success("Convite criado e link copiado!");
       queryClient.invalidateQueries({ queryKey: ["admin-invites"] });
       setCustomCode("");
+    },
     onError: (err: any) => toast.error(err.message || "Erro ao criar convite."),
   });
 
