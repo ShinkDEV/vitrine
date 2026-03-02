@@ -579,12 +579,7 @@ const Admin = () => {
                       {previewCertificates.map((cert: any) => (
                         <button
                           key={cert.id}
-                          onClick={async () => {
-                            const { data } = await supabase.storage
-                              .from("certificates")
-                              .createSignedUrl(cert.file_url, 300);
-                            if (data?.signedUrl) window.open(data.signedUrl, "_blank");
-                          }}
+                          onClick={() => window.open(cert.file_url, "_blank")}
                           className="flex items-center gap-2 w-full text-left p-2 rounded-lg border border-border hover:bg-accent transition-colors"
                         >
                           <FileText className="h-4 w-4 text-primary flex-shrink-0" />
