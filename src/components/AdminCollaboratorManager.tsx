@@ -337,7 +337,6 @@ const AdminCollaboratorManager = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
 
       {/* Reset Password Dialog */}
       <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
