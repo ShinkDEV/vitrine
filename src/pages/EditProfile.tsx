@@ -159,7 +159,6 @@ const EditProfile = () => {
     }
 
     const whatsappClean = form.whatsapp_number.replace(/\D/g, "");
-    const wasDeactivated = professional.status === "desativado";
     const { error } = await supabase
       .from("professionals")
       .update({
@@ -177,7 +176,7 @@ const EditProfile = () => {
         payment_methods: form.payment_methods,
         slug: cleanSlug,
         last_portfolio_update: new Date().toISOString(),
-        ...(wasDeactivated ? { status: "rascunho" } : {}),
+        status: "pendente",
       })
       .eq("id", professional.id);
     if (error) throw error;
