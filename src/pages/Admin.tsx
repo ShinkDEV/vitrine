@@ -336,7 +336,7 @@ const Admin = () => {
       </div>
 
       <div className="container mx-auto px-4 pb-8 max-w-4xl space-y-8">
-        <AdminCollaboratorManager />
+        {isAdmin && <AdminCollaboratorManager />}
         <AdminInviteManager />
         <AdminBannerManager />
       </div>
