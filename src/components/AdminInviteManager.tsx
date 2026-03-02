@@ -1,3 +1,5 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 const CUSTOM_DOMAIN = "https://vitrine.escola.ro";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
