@@ -92,8 +92,8 @@ const Register = () => {
         body: { name, email },
       }).catch((err) => console.error("Welcome email error:", err));
 
-      toast.success("Conta criada! Verifique seu email para confirmar.");
-      navigate("/login");
+      toast.success("Conta criada com sucesso! Redirecionando...");
+      navigate("/dashboard");
     } catch (err: any) {
       toast.error(err.message || "Erro ao criar conta.");
     } finally {
