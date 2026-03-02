@@ -14,9 +14,29 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  // Check if user is collaborator (not professional)
+  const { data: userRoles, isLoading: rolesLoading } = useQuery({
+    queryKey: ["user-roles", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      return data?.map((r) => r.role) ?? [];
+    },
+    enabled: !!user,
+  });
+
+  const isCollaboratorOnly = userRoles && !userRoles.includes("professional") && (userRoles.includes("colaborador") || userRoles.includes("admin"));
+
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
   }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    if (!rolesLoading && isCollaboratorOnly) navigate("/admin", { replace: true });
+  }, [rolesLoading, isCollaboratorOnly, navigate]);
 
   const { data: professional } = useQuery({
     queryKey: ["my-professional", user?.id],
@@ -61,7 +81,7 @@ const Dashboard = () => {
     return null;
   }, [professional?.last_portfolio_update]);
 
-  if (authLoading || !user) return null;
+  if (authLoading || !user || rolesLoading || isCollaboratorOnly) return null;
 
   const checks = [
     { label: "Foto de perfil", done: !!professional?.profile_photo_url },
