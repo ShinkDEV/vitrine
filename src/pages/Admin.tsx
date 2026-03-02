@@ -458,7 +458,11 @@ const Admin = () => {
               <Eye className="h-5 w-5" />
               Pré-visualização do Perfil
             </DialogTitle>
-            {previewPro?.status !== "publicado" && (
+            {previewPro?.status === "publicado" ? (
+              <div className="bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-lg px-3 py-2 text-xs font-medium mt-2">
+                ✅ Perfil Publicado
+              </div>
+            ) : (
               <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-lg px-3 py-2 text-xs font-medium mt-2">
                 ⚠️ Este perfil ainda NÃO está publicado — Status: {STATUS_LABELS[previewPro?.status]?.label || previewPro?.status}
               </div>
