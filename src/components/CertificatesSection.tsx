@@ -105,16 +105,15 @@ const CertificatesSection = ({ professionalId, userId }: Props) => {
 
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
+      const ext = processedFile.name.split(".").pop();
       const path = `certificates/${userId}/${Date.now()}.${ext}`;
 
-      // Upload to R2 via edge function
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
       if (!token) throw new Error("Não autenticado.");
 
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", processedFile);
       formData.append("path", path);
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -131,9 +130,9 @@ const CertificatesSection = ({ professionalId, userId }: Props) => {
         .from("professional_certificates")
         .insert({
           professional_id: professionalId,
-          file_name: file.name,
+          file_name: file.name, // Keep original name
           file_url: result.url,
-          file_type: file.type,
+          file_type: processedFile.type,
         });
       if (insertError) throw insertError;
 
