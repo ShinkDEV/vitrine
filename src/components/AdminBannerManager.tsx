@@ -9,13 +9,14 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { toast } from "sonner";
-import { Plus, Trash2, Image, ExternalLink } from "lucide-react";
+import { Plus, Trash2, Image, ExternalLink, Pencil } from "lucide-react";
 import BannerCropDialog from "@/components/BannerCropDialog";
 
 const AdminBannerManager = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingBanner, setEditingBanner] = useState<any | null>(null);
   const [filterPlacement, setFilterPlacement] = useState<string>("home");
   const [title, setTitle] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
@@ -75,6 +76,30 @@ const AdminBannerManager = () => {
     setCropSrc(null);
   };
 
+  const uploadImage = async (blob: Blob): Promise<string> => {
+    const session = await supabase.auth.getSession();
+    const token = session.data.session?.access_token;
+    if (!token) throw new Error("Não autenticado.");
+
+    const path = `banners/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
+    const formData = new FormData();
+    formData.append("file", blob, "banner.jpg");
+    formData.append("path", path);
+
+    const res = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-to-r2`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      }
+    );
+
+    if (!res.ok) throw new Error("Falha ao enviar imagem.");
+    const { url } = await res.json();
+    return url;
+  };
+
   const handleCreateBanner = async () => {
     if (!croppedBlob) {
       toast.error("Selecione e recorte uma imagem.");
@@ -83,28 +108,7 @@ const AdminBannerManager = () => {
 
     setUploading(true);
     try {
-      const session = await supabase.auth.getSession();
-      const token = session.data.session?.access_token;
-      if (!token) throw new Error("Não autenticado.");
-
-      const path = `banners/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
-
-      const formData = new FormData();
-      formData.append("file", croppedBlob, "banner.jpg");
-      formData.append("path", path);
-
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-to-r2`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        }
-      );
-
-      if (!res.ok) throw new Error("Falha ao enviar imagem.");
-      const { url } = await res.json();
-
+      const url = await uploadImage(croppedBlob);
       const maxOrder = banners?.length ? Math.max(...banners.map((b) => b.order_index)) + 1 : 0;
 
       const { error } = await supabase.from("banners").insert({
@@ -118,16 +122,59 @@ const AdminBannerManager = () => {
       if (error) throw error;
 
       toast.success("Banner criado!");
-      setDialogOpen(false);
-      setTitle("");
-      setLinkUrl("");
-      setCroppedBlob(null);
+      closeDialog();
       queryClient.invalidateQueries({ queryKey: ["admin-banners"] });
     } catch (err: any) {
       toast.error(err.message || "Erro ao criar banner.");
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleUpdateBanner = async () => {
+    if (!editingBanner) return;
+    setUploading(true);
+    try {
+      const updateData: Record<string, any> = {
+        title: title || null,
+        link_url: linkUrl || null,
+      };
+
+      if (croppedBlob) {
+        updateData.image_url = await uploadImage(croppedBlob);
+      }
+
+      const { error } = await supabase
+        .from("banners")
+        .update(updateData)
+        .eq("id", editingBanner.id);
+      if (error) throw error;
+
+      toast.success("Banner atualizado!");
+      closeDialog();
+      queryClient.invalidateQueries({ queryKey: ["admin-banners"] });
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao atualizar banner.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const openEditDialog = (banner: any) => {
+    setEditingBanner(banner);
+    setTitle(banner.title || "");
+    setLinkUrl(banner.link_url || "");
+    setPlacement(banner.placement);
+    setCroppedBlob(null);
+    setDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setEditingBanner(null);
+    setTitle("");
+    setLinkUrl("");
+    setCroppedBlob(null);
   };
 
   return (
@@ -194,6 +241,13 @@ const AdminBannerManager = () => {
                 <Button
                   size="sm"
                   variant="ghost"
+                  onClick={() => openEditDialog(banner)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
                   className="text-destructive"
                   onClick={() => {
                     if (confirm("Remover este banner?")) deleteBanner.mutate(banner.id);
@@ -207,11 +261,11 @@ const AdminBannerManager = () => {
         </div>
       )}
 
-      {/* Create Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* Create/Edit Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={(v) => { if (!v) closeDialog(); else setDialogOpen(v); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Novo Banner</DialogTitle>
+            <DialogTitle>{editingBanner ? "Editar Banner" : "Novo Banner"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -222,29 +276,39 @@ const AdminBannerManager = () => {
               <label className="text-sm font-medium text-foreground mb-1 block">Link (opcional)</label>
               <Input value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="https://..." />
             </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Exibir em</label>
-              <Select value={placement} onValueChange={setPlacement}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="home">Página Inicial</SelectItem>
-                  <SelectItem value="dashboard">Dashboard (profissionais)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {!editingBanner && (
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Exibir em</label>
+                <Select value={placement} onValueChange={setPlacement}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="home">Página Inicial</SelectItem>
+                    <SelectItem value="dashboard">Dashboard (profissionais)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">
                 Imagem (1600×400px — proporção 4:1)
+                {editingBanner && " — deixe vazio para manter a atual"}
               </label>
+              {editingBanner && !croppedBlob && (
+                <div className="mb-2 rounded-lg overflow-hidden border border-border">
+                  <AspectRatio ratio={4 / 1}>
+                    <img src={editingBanner.image_url} alt="Atual" className="w-full h-full object-cover" />
+                  </AspectRatio>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
                   <Image className="h-4 w-4 mr-1" />
-                  Selecionar imagem
+                  {editingBanner ? "Trocar imagem" : "Selecionar imagem"}
                 </Button>
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
-                {croppedBlob && <span className="text-xs text-primary font-medium">✓ Imagem recortada</span>}
+                {croppedBlob && <span className="text-xs text-primary font-medium">✓ Nova imagem recortada</span>}
               </div>
               {croppedBlob && (
                 <div className="mt-2 rounded-lg overflow-hidden border border-border">
@@ -254,8 +318,12 @@ const AdminBannerManager = () => {
                 </div>
               )}
             </div>
-            <Button onClick={handleCreateBanner} disabled={uploading} className="w-full">
-              {uploading ? "Enviando..." : "Criar Banner"}
+            <Button
+              onClick={editingBanner ? handleUpdateBanner : handleCreateBanner}
+              disabled={uploading || (!editingBanner && !croppedBlob)}
+              className="w-full"
+            >
+              {uploading ? "Enviando..." : editingBanner ? "Salvar alterações" : "Criar Banner"}
             </Button>
           </div>
         </DialogContent>
