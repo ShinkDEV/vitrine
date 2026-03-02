@@ -52,6 +52,12 @@ const Login = () => {
               {loading ? "Entrando..." : "Entrar"}
             </Button>
           </form>
+
+          <p className="text-sm text-center text-muted-foreground mt-4">
+            <Link to="/esqueci-senha" className="text-primary font-medium hover:underline">
+              Esqueci minha senha
+            </Link>
+          </p>
         </div>
       </div>
     </div>
