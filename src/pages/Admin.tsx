@@ -447,9 +447,11 @@ const Admin = () => {
               <Eye className="h-5 w-5" />
               Pré-visualização do Perfil
             </DialogTitle>
-            <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-lg px-3 py-2 text-xs font-medium mt-2">
-              ⚠️ Este perfil ainda NÃO está publicado — Status: {STATUS_LABELS[previewPro?.status]?.label || previewPro?.status}
-            </div>
+            {previewPro?.status !== "publicado" && (
+              <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-lg px-3 py-2 text-xs font-medium mt-2">
+                ⚠️ Este perfil ainda NÃO está publicado — Status: {STATUS_LABELS[previewPro?.status]?.label || previewPro?.status}
+              </div>
+            )}
           </DialogHeader>
           {previewPro && (
             <ScrollArea className="max-h-[70vh] px-6 pb-6">
