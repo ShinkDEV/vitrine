@@ -28,16 +28,15 @@ const Register = () => {
       try {
         const { data, error } = await supabase
           .from("invites")
-          .select("id, email, expires_at, used_by")
+          .select("id, expires_at, use_count, max_uses")
           .eq("code", inviteCode)
           .maybeSingle();
 
-        if (error || !data || data.used_by || new Date(data.expires_at) < new Date()) {
+        if (error || !data || new Date(data.expires_at) < new Date() || (data.max_uses && data.use_count >= data.max_uses)) {
           setInviteValid(false);
         } else {
           setInviteValid(true);
           setInviteId(data.id);
-          if (data.email) setEmail(data.email);
         }
       } catch {
         setInviteValid(false);
@@ -73,12 +72,19 @@ const Register = () => {
       });
       if (error) throw error;
 
-      // Mark invite as used
-      if (data.user && inviteId) {
-        await supabase
+      // Increment invite use count
+      if (inviteId) {
+        const { data: currentInvite } = await supabase
           .from("invites")
-          .update({ used_by: data.user.id, used_at: new Date().toISOString() })
-          .eq("id", inviteId);
+          .select("use_count")
+          .eq("id", inviteId)
+          .single();
+        if (currentInvite) {
+          await supabase
+            .from("invites")
+            .update({ use_count: currentInvite.use_count + 1 })
+            .eq("id", inviteId);
+        }
       }
 
       // Send welcome email (fire and forget)
