@@ -145,6 +145,37 @@ const AdminCollaboratorManager = () => {
     onError: (err: any) => toast.error(err.message || "Erro ao remover."),
   });
 
+  const resetPassword = useMutation({
+    mutationFn: async () => {
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+      if (!token) throw new Error("Não autenticado.");
+
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-collaborator`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ action: "reset_password", user_id: resetUserId, new_password: newPassword }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao redefinir senha.");
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Senha redefinida com sucesso!");
+      setResetDialogOpen(false);
+      setNewPassword("");
+      setResetUserId("");
+    },
+    onError: (err: any) => toast.error(err.message || "Erro ao redefinir senha."),
+  });
+
   const resetForm = () => {
     setName("");
     setEmail("");
