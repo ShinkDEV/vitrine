@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Plus, Trash2, Upload, ArrowLeft, Clock, FileText } from "lucide-react";
+import { Plus, Trash2, Upload, ArrowLeft, Clock, FileText, Loader2, Check } from "lucide-react";
 import ProfileCropDialog from "@/components/ProfileCropDialog";
 import PortfolioCropDialog from "@/components/PortfolioCropDialog";
 import CertificatesSection from "@/components/CertificatesSection";
@@ -33,7 +33,9 @@ const EditProfile = () => {
     slug: "",
   });
   const [slugError, setSlugError] = useState("");
-
+  const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const formInitialized = useRef(false);
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [services, setServices] = useState<{ id?: string; title: string; price: string; priceOnRequest: boolean }[]>([]);
   const [workingHours, setWorkingHours] = useState<{ day: number; enabled: boolean; open: string; close: string }[]>(
     Array.from({ length: 7 }, (_, i) => ({ day: i, enabled: false, open: "09:00", close: "18:00" }))
@@ -99,6 +101,8 @@ const EditProfile = () => {
           priceOnRequest: s.price === null || s.price === undefined,
         })) || []
       );
+      // Mark as initialized after a short delay to avoid triggering auto-save on load
+      setTimeout(() => { formInitialized.current = true; }, 500);
     }
   }, [professional]);
 
@@ -115,52 +119,56 @@ const EditProfile = () => {
     }
   }, [existingHours]);
 
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      if (!professional) return;
+  const performSave = useCallback(async () => {
+    if (!professional) return;
 
-      // Validate slug
-      const cleanSlug = form.slug.toLowerCase().replace(/[^a-z0-9._-]/g, "").replace(/[-_.]{2,}/g, (m) => m[0]).replace(/^[-_.]|[-_.]$/g, "");
-      if (!cleanSlug) throw new Error("Username é obrigatório.");
-      if (cleanSlug !== professional.slug) {
-        const { data: existing } = await supabase
-          .from("professionals")
-          .select("id")
-          .eq("slug", cleanSlug)
-          .neq("id", professional.id)
-          .maybeSingle();
-        if (existing) throw new Error("Este username já está em uso. Escolha outro.");
-      }
+    const cleanSlug = form.slug.toLowerCase().replace(/[^a-z0-9._-]/g, "").replace(/[-_.]{2,}/g, (m) => m[0]).replace(/^[-_.]|[-_.]$/g, "");
+    if (!cleanSlug) return; // Don't auto-save without slug
 
-      const whatsappClean = form.whatsapp_number.replace(/\D/g, "");
-      const wasDeactivated = professional.status === "desativado";
-      const { error } = await supabase
+    if (cleanSlug !== professional.slug) {
+      const { data: existing } = await supabase
         .from("professionals")
-        .update({
-          name: form.name,
-          bio: form.bio,
-          country: form.country,
-          state: form.state,
-          city: form.city,
-          address_street: form.address_street,
-          address_number: form.address_number,
-          address_neighborhood: form.address_neighborhood,
-          address_complement: form.address_complement,
-          whatsapp_number: whatsappClean,
-          whatsapp_link: whatsappClean ? `https://wa.me/${whatsappClean}` : null,
-          payment_methods: form.payment_methods,
-          slug: cleanSlug,
-          last_portfolio_update: new Date().toISOString(),
-          ...(wasDeactivated ? { status: "rascunho" } : {}),
-        })
-        .eq("id", professional.id);
-      if (error) throw error;
+        .select("id")
+        .eq("slug", cleanSlug)
+        .neq("id", professional.id)
+        .maybeSingle();
+      if (existing) {
+        setSlugError("Este username já está em uso.");
+        return;
+      }
+    }
 
-      // Delete existing services and re-insert
-      await supabase.from("services").delete().eq("professional_id", professional.id);
-      if (services.length > 0) {
+    const whatsappClean = form.whatsapp_number.replace(/\D/g, "");
+    const wasDeactivated = professional.status === "desativado";
+    const { error } = await supabase
+      .from("professionals")
+      .update({
+        name: form.name,
+        bio: form.bio,
+        country: form.country,
+        state: form.state,
+        city: form.city,
+        address_street: form.address_street,
+        address_number: form.address_number,
+        address_neighborhood: form.address_neighborhood,
+        address_complement: form.address_complement,
+        whatsapp_number: whatsappClean,
+        whatsapp_link: whatsappClean ? `https://wa.me/${whatsappClean}` : null,
+        payment_methods: form.payment_methods,
+        slug: cleanSlug,
+        last_portfolio_update: new Date().toISOString(),
+        ...(wasDeactivated ? { status: "rascunho" } : {}),
+      })
+      .eq("id", professional.id);
+    if (error) throw error;
+
+    // Delete existing services and re-insert
+    await supabase.from("services").delete().eq("professional_id", professional.id);
+    if (services.length > 0) {
+      const validServices = services.filter(s => s.title.trim());
+      if (validServices.length > 0) {
         const { error: sError } = await supabase.from("services").insert(
-          services.map((s, i) => ({
+          validServices.map((s, i) => ({
             professional_id: professional.id,
             title: s.title,
             price: s.priceOnRequest ? null : (s.price ? Number(s.price) : null),
@@ -170,22 +178,51 @@ const EditProfile = () => {
         );
         if (sError) throw sError;
       }
+    }
 
-      // Save working hours
-      await supabase.from("working_hours").delete().eq("professional_id", professional.id);
-      const enabledHours = workingHours.filter((h) => h.enabled);
-      if (enabledHours.length > 0) {
-        const { error: whError } = await supabase.from("working_hours").insert(
-          enabledHours.map((h) => ({
-            professional_id: professional.id,
-            day_of_week: h.day,
-            open_time: h.open,
-            close_time: h.close,
-          }))
-        );
-        if (whError) throw whError;
+    // Save working hours
+    await supabase.from("working_hours").delete().eq("professional_id", professional.id);
+    const enabledHours = workingHours.filter((h) => h.enabled);
+    if (enabledHours.length > 0) {
+      const { error: whError } = await supabase.from("working_hours").insert(
+        enabledHours.map((h) => ({
+          professional_id: professional.id,
+          day_of_week: h.day,
+          open_time: h.open,
+          close_time: h.close,
+        }))
+      );
+      if (whError) throw whError;
+    }
+  }, [form, services, workingHours, professional]);
+
+  // Auto-save with debounce
+  useEffect(() => {
+    if (!formInitialized.current || !professional) return;
+
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+
+    autoSaveTimer.current = setTimeout(async () => {
+      setAutoSaveStatus("saving");
+      try {
+        await performSave();
+        setAutoSaveStatus("saved");
+        queryClient.invalidateQueries({ queryKey: ["my-professional-edit"] });
+        queryClient.invalidateQueries({ queryKey: ["my-professional"] });
+        setTimeout(() => setAutoSaveStatus("idle"), 2000);
+      } catch (err: any) {
+        setAutoSaveStatus("idle");
+        toast.error(err.message || "Erro ao salvar automaticamente.");
       }
-    },
+    }, 1500);
+
+    return () => {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    };
+  }, [form, services, workingHours, professional, performSave, queryClient]);
+
+  const saveMutation = useMutation({
+    mutationFn: performSave,
     onSuccess: () => {
       toast.success("Perfil atualizado com sucesso.");
       queryClient.invalidateQueries({ queryKey: ["my-professional-edit"] });
@@ -361,6 +398,22 @@ const EditProfile = () => {
           <p className="text-sm text-muted-foreground mb-8">
             Mantenha seu perfil atualizado para atrair mais clientes.
           </p>
+
+          {/* Auto-save indicator */}
+          <div className="flex items-center gap-2 mb-4 h-5">
+            {autoSaveStatus === "saving" && (
+              <span className="flex items-center gap-1.5 text-xs text-muted-foreground animate-fade-in">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Salvando rascunho...
+              </span>
+            )}
+            {autoSaveStatus === "saved" && (
+              <span className="flex items-center gap-1.5 text-xs text-primary animate-fade-in">
+                <Check className="h-3 w-3" />
+                Rascunho salvo
+              </span>
+            )}
+          </div>
 
           {/* Profile Photo */}
           <div className="mb-8">
