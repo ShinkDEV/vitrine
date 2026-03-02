@@ -87,13 +87,18 @@ const Register = () => {
         }
       }
 
-      // Send welcome email (fire and forget)
+      // Send confirmation email via Resend (fire and forget the welcome — it'll be sent after confirmation)
+      supabase.functions.invoke("send-confirmation-email", {
+        body: { name, email, redirectUrl: `${window.location.origin}/login` },
+      }).catch((err) => console.error("Confirmation email error:", err));
+
+      // Send welcome email too (fire and forget)
       supabase.functions.invoke("send-welcome-email", {
         body: { name, email },
       }).catch((err) => console.error("Welcome email error:", err));
 
-      toast.success("Conta criada com sucesso! Redirecionando...");
-      navigate("/dashboard");
+      toast.success("Conta criada! Verifique seu email para confirmar.");
+      navigate("/login");
     } catch (err: any) {
       toast.error(err.message || "Erro ao criar conta.");
     } finally {
