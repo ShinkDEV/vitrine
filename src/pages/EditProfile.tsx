@@ -533,13 +533,23 @@ const EditProfile = () => {
                 <Input value={form.address_complement} onChange={(e) => setForm({ ...form, address_complement: e.target.value })} />
               </div>
               <div className="sm:col-span-2">
-                <label className="text-sm font-medium text-foreground mb-1.5 block">WhatsApp (com DDI e DDD) *</label>
-                <Input
-                  placeholder="5511999999999"
-                  value={form.whatsapp_number}
-                  onChange={(e) => setForm({ ...form, whatsapp_number: e.target.value })}
-                  required
-                />
+                <label className="text-sm font-medium text-foreground mb-1.5 block">WhatsApp (com DDD) *</label>
+                <div className="relative flex items-center">
+                  <div className="absolute left-3 flex items-center gap-1.5 pointer-events-none">
+                    <span className="text-base leading-none">🇧🇷</span>
+                    <span className="text-sm text-muted-foreground font-medium">+55</span>
+                  </div>
+                  <Input
+                    placeholder="11999999999"
+                    value={form.whatsapp_number.replace(/^55/, "")}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, "").slice(0, 11);
+                      setForm({ ...form, whatsapp_number: "55" + digits });
+                    }}
+                    className="pl-[4.5rem]"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
