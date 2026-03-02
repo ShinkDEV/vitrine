@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,13 +8,51 @@ import Header from "@/components/Header";
 
 const Register = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const inviteCode = searchParams.get("invite");
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [validatingInvite, setValidatingInvite] = useState(true);
+  const [inviteValid, setInviteValid] = useState(false);
+  const [inviteId, setInviteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const validateInvite = async () => {
+      if (!inviteCode) {
+        setValidatingInvite(false);
+        return;
+      }
+      try {
+        const { data, error } = await supabase
+          .from("invites")
+          .select("id, email, expires_at, used_by")
+          .eq("code", inviteCode)
+          .maybeSingle();
+
+        if (error || !data || data.used_by || new Date(data.expires_at) < new Date()) {
+          setInviteValid(false);
+        } else {
+          setInviteValid(true);
+          setInviteId(data.id);
+          if (data.email) setEmail(data.email);
+        }
+      } catch {
+        setInviteValid(false);
+      }
+      setValidatingInvite(false);
+    };
+    validateInvite();
+  }, [inviteCode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!inviteCode || !inviteValid) {
+      toast.error("Convite inválido.");
+      return;
+    }
     if (!name.trim() || !email.trim() || !password.trim()) {
       toast.error("Preencha todos os campos.");
       return;
@@ -35,6 +73,14 @@ const Register = () => {
       });
       if (error) throw error;
 
+      // Mark invite as used
+      if (data.user && inviteId) {
+        await supabase
+          .from("invites")
+          .update({ used_by: data.user.id, used_at: new Date().toISOString() })
+          .eq("id", inviteId);
+      }
+
       // Send welcome email (fire and forget)
       supabase.functions.invoke("send-welcome-email", {
         body: { name, email },
@@ -49,6 +95,41 @@ const Register = () => {
     }
   };
 
+  if (validatingInvite) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-12 max-w-md text-center">
+          <p className="text-muted-foreground">Validando convite...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!inviteCode || !inviteValid) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-12 max-w-md">
+          <div className="bg-card rounded-2xl shadow-card p-8 text-center animate-fade-in">
+            <span className="text-4xl mb-4 block">🔒</span>
+            <h1 className="text-xl font-display font-bold text-foreground mb-2">
+              Cadastro por convite
+            </h1>
+            <p className="text-sm text-muted-foreground mb-4">
+              {!inviteCode
+                ? "Para se cadastrar, você precisa de um link de convite. Solicite ao administrador."
+                : "Este convite é inválido, já foi utilizado ou expirou."}
+            </p>
+            <Button variant="outline" asChild>
+              <Link to="/">Voltar ao início</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -60,6 +141,10 @@ const Register = () => {
           <p className="text-sm text-muted-foreground text-center mb-8">
             Se você concluiu o curso, cadastre-se e seja encontrado por clientes da sua região.
           </p>
+
+          <div className="bg-green-50 border border-green-200 text-green-800 rounded-xl px-4 py-2.5 text-sm mb-6 flex items-center gap-2">
+            <span>✅</span> Convite válido
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
