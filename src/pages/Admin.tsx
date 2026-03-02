@@ -49,9 +49,12 @@ const Admin = () => {
     enabled: !!user,
   });
 
+  const hasAccess = (userRoles?.length ?? 0) > 0;
+  const isAdmin = userRoles?.includes("admin") ?? false;
+
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
-    if (!authLoading && !roleLoading && user && hasAccess === false) {
+    if (!authLoading && !roleLoading && user && !hasAccess) {
       toast.error("Acesso negado.");
       navigate("/dashboard");
     }
