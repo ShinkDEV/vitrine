@@ -55,7 +55,7 @@ const AdminInviteManager = () => {
   });
 
   const copyLink = (code: string) => {
-    const link = `${window.location.origin}/cadastro?invite=${code}`;
+    const link = `${CUSTOM_DOMAIN}/cadastro?invite=${code}`;
     navigator.clipboard.writeText(link);
     toast.success("Link copiado!");
   };
