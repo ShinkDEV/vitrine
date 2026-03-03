@@ -97,6 +97,19 @@ const EditProfile = () => {
     enabled: !!professional?.id,
   });
 
+  const { data: certificates } = useQuery({
+    queryKey: ["certificates-count", professional?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("professional_certificates")
+        .select("id")
+        .eq("professional_id", professional!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!professional?.id,
+  });
+
   useEffect(() => {
     if (professional && !formInitialized.current) {
       setForm({
@@ -466,7 +479,26 @@ const EditProfile = () => {
             </div>
           </div>
 
-          <form onSubmit={(e) => { e.preventDefault(); saveMutation.mutate(); }} className="space-y-6">
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            // Validate all required fields
+            if (!form.name.trim()) { toast.error("Nome profissional é obrigatório."); return; }
+            if (!form.slug.trim()) { toast.error("Username é obrigatório."); return; }
+            if (!form.bio.trim()) { toast.error("Bio é obrigatória."); return; }
+            if (!form.state) { toast.error("Estado é obrigatório."); return; }
+            if (!form.city.trim()) { toast.error("Cidade é obrigatória."); return; }
+            if (!form.address_street.trim()) { toast.error("Rua é obrigatória."); return; }
+            if (!form.address_number.trim()) { toast.error("Número é obrigatório."); return; }
+            if (!form.address_neighborhood.trim()) { toast.error("Bairro é obrigatório."); return; }
+            const whatsDigits = form.whatsapp_number.replace(/^55/, "").replace(/\D/g, "");
+            if (whatsDigits.length < 10) { toast.error("WhatsApp é obrigatório (com DDD)."); return; }
+            if (form.payment_methods.length === 0) { toast.error("Selecione ao menos uma forma de pagamento."); return; }
+            if (services.length === 0 || !services.some(s => s.title.trim())) { toast.error("Adicione ao menos um serviço."); return; }
+            if (!professional?.profile_photo_url) { toast.error("Foto de perfil é obrigatória."); return; }
+            if ((professional?.portfolio_photos?.length ?? 0) < 3) { toast.error("Adicione ao menos 3 fotos no portfólio."); return; }
+            if (!certificates || certificates.length === 0) { toast.error("Envie ao menos um certificado."); return; }
+            saveMutation.mutate();
+          }} className="space-y-6">
             {/* Main Info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
