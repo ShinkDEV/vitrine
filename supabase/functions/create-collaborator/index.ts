@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
       email,
       password,
       email_confirm: true,
-      user_metadata: { name },
+      user_metadata: { name, is_collaborator: "true" },
     });
 
     if (createError) {
