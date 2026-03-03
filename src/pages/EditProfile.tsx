@@ -97,6 +97,19 @@ const EditProfile = () => {
     enabled: !!professional?.id,
   });
 
+  const { data: certificates } = useQuery({
+    queryKey: ["certificates-count", professional?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("professional_certificates")
+        .select("id")
+        .eq("professional_id", professional!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!professional?.id,
+  });
+
   useEffect(() => {
     if (professional && !formInitialized.current) {
       setForm({
@@ -436,7 +449,7 @@ const EditProfile = () => {
 
           {/* Profile Photo */}
           <div className="mb-8">
-            <label className="text-sm font-medium text-foreground mb-2 block">Foto de perfil</label>
+            <label className="text-sm font-medium text-foreground mb-2 block">Foto de perfil *</label>
             <div
               className="flex items-center gap-4 p-4 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors"
               onDragOver={(e) => e.preventDefault()}
@@ -466,15 +479,34 @@ const EditProfile = () => {
             </div>
           </div>
 
-          <form onSubmit={(e) => { e.preventDefault(); saveMutation.mutate(); }} className="space-y-6">
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            // Validate all required fields
+            if (!form.name.trim()) { toast.error("Nome profissional é obrigatório."); return; }
+            if (!form.slug.trim()) { toast.error("Username é obrigatório."); return; }
+            if (!form.bio.trim()) { toast.error("Bio é obrigatória."); return; }
+            if (!form.state) { toast.error("Estado é obrigatório."); return; }
+            if (!form.city.trim()) { toast.error("Cidade é obrigatória."); return; }
+            if (!form.address_street.trim()) { toast.error("Rua é obrigatória."); return; }
+            if (!form.address_number.trim()) { toast.error("Número é obrigatório."); return; }
+            if (!form.address_neighborhood.trim()) { toast.error("Bairro é obrigatório."); return; }
+            const whatsDigits = form.whatsapp_number.replace(/^55/, "").replace(/\D/g, "");
+            if (whatsDigits.length < 10) { toast.error("WhatsApp é obrigatório (com DDD)."); return; }
+            if (form.payment_methods.length === 0) { toast.error("Selecione ao menos uma forma de pagamento."); return; }
+            if (services.length === 0 || !services.some(s => s.title.trim())) { toast.error("Adicione ao menos um serviço."); return; }
+            if (!professional?.profile_photo_url) { toast.error("Foto de perfil é obrigatória."); return; }
+            if ((professional?.portfolio_photos?.length ?? 0) < 3) { toast.error("Adicione ao menos 3 fotos no portfólio."); return; }
+            if (!certificates || certificates.length === 0) { toast.error("Envie ao menos um certificado."); return; }
+            saveMutation.mutate();
+          }} className="space-y-6">
             {/* Main Info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Nome profissional / Nome do salão</label>
-                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Nome profissional / Nome do salão *</label>
+                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
               </div>
               <div className="sm:col-span-2">
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Username (link do perfil)</label>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Username (link do perfil) *</label>
                 <div className="flex items-center gap-0">
                   <span className="text-sm text-muted-foreground whitespace-nowrap bg-muted px-3 h-10 flex items-center rounded-l-lg border border-r-0 border-input">/p/</span>
                   <Input
@@ -492,7 +524,7 @@ const EditProfile = () => {
                 <p className="text-xs text-muted-foreground mt-1">Seu perfil ficará em: /p/{form.slug || "..."}</p>
               </div>
               <div className="sm:col-span-2">
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Bio (até 300 caracteres)</label>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Bio (até 300 caracteres) *</label>
                 <Textarea
                   value={form.bio}
                   onChange={(e) => setForm({ ...form, bio: e.target.value.slice(0, 300) })}
@@ -502,7 +534,7 @@ const EditProfile = () => {
                 <p className="text-xs text-muted-foreground mt-1">{form.bio.length}/300</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Estado</label>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Estado *</label>
                 <select
                   value={form.state}
                   onChange={(e) => setForm({ ...form, state: e.target.value })}
@@ -517,16 +549,16 @@ const EditProfile = () => {
                 <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} required />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Rua</label>
-                <Input value={form.address_street} onChange={(e) => setForm({ ...form, address_street: e.target.value })} />
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Rua *</label>
+                <Input value={form.address_street} onChange={(e) => setForm({ ...form, address_street: e.target.value })} required />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Número</label>
-                <Input value={form.address_number} onChange={(e) => setForm({ ...form, address_number: e.target.value })} />
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Número *</label>
+                <Input value={form.address_number} onChange={(e) => setForm({ ...form, address_number: e.target.value })} required />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Bairro</label>
-                <Input value={form.address_neighborhood} onChange={(e) => setForm({ ...form, address_neighborhood: e.target.value })} />
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Bairro *</label>
+                <Input value={form.address_neighborhood} onChange={(e) => setForm({ ...form, address_neighborhood: e.target.value })} required />
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Complemento</label>
@@ -560,7 +592,7 @@ const EditProfile = () => {
 
             {/* Services */}
             <div>
-              <h3 className="text-base font-display font-semibold text-foreground mb-3">Serviços</h3>
+              <h3 className="text-base font-display font-semibold text-foreground mb-3">Serviços *</h3>
               <div className="space-y-3">
                 {services.map((service, i) => (
                   <div key={i} className="flex flex-col gap-2 p-3 rounded-lg border border-border">
@@ -683,7 +715,7 @@ const EditProfile = () => {
 
             {/* Payment Methods */}
             <div>
-              <h3 className="text-base font-display font-semibold text-foreground mb-3">Formas de pagamento</h3>
+              <h3 className="text-base font-display font-semibold text-foreground mb-3">Formas de pagamento *</h3>
               <div className="grid grid-cols-2 gap-3">
                 {PAYMENT_OPTIONS.map((method) => (
                   <label key={method} className="flex items-center gap-2 cursor-pointer">
@@ -707,7 +739,7 @@ const EditProfile = () => {
             {/* Portfolio */}
             <div>
               <h3 className="text-base font-display font-semibold text-foreground mb-1">
-                Portfólio ({professional?.portfolio_photos?.length ?? 0}/10 fotos)
+                Portfólio ({professional?.portfolio_photos?.length ?? 0}/10 fotos) *
               </h3>
               <p className="text-xs text-muted-foreground mb-3">
                 Mínimo de 3 fotos obrigatórias para publicação.

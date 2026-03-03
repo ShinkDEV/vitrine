@@ -162,7 +162,7 @@ const CertificatesSection = ({ professionalId, userId }: Props) => {
   return (
     <div>
       <h3 className="text-base font-display font-semibold text-foreground mb-1">
-        Certificados ({certificates?.length ?? 0})
+        Certificados ({certificates?.length ?? 0}) *
       </h3>
       <p className="text-xs text-muted-foreground mb-3">
         Envie seus certificados de formação. Formatos aceitos: JPG, PNG, PDF (máx. 5MB).
