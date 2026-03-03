@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
       email,
       password,
       email_confirm: true,
-      user_metadata: { name },
+      user_metadata: { name, is_collaborator: "true" },
     });
 
     if (createError) {
@@ -111,9 +111,7 @@ Deno.serve(async (req) => {
 
     const userId = newUser.user.id;
 
-    // Remove auto-created professional profile and role from trigger
-    await adminClient.from("professionals").delete().eq("user_id", userId);
-    await adminClient.from("user_roles").delete().eq("user_id", userId).eq("role", "professional");
+    // No need to clean up - trigger skips collaborators via is_collaborator metadata
 
     const { error: roleError } = await adminClient
       .from("user_roles")
