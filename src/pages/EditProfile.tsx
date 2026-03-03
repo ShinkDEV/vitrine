@@ -741,7 +741,6 @@ const EditProfile = () => {
               <h3 className="text-base font-display font-semibold text-foreground mb-1">
                 Portfólio ({professional?.portfolio_photos?.length ?? 0}/10 fotos) *
               </h3>
-              </h3>
               <p className="text-xs text-muted-foreground mb-3">
                 Mínimo de 3 fotos obrigatórias para publicação.
               </p>
