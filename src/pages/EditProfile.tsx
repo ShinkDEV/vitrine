@@ -303,9 +303,14 @@ const EditProfile = () => {
   const saveMutation = useMutation({
     mutationFn: performSave,
     onSuccess: () => {
-      toast.success("Perfil atualizado com sucesso.");
+      if (professional?.status === "publicado") {
+        toast.success("Alterações enviadas para aprovação. Seu perfil continua ativo com os dados anteriores.");
+      } else {
+        toast.success("Perfil atualizado com sucesso.");
+      }
       queryClient.invalidateQueries({ queryKey: ["my-professional-edit"] });
       queryClient.invalidateQueries({ queryKey: ["my-professional"] });
+      queryClient.invalidateQueries({ queryKey: ["my-pending-changes"] });
     },
     onError: (err: any) => toast.error(err.message || "Erro ao salvar."),
   });
