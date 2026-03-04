@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.migrate-to-s3]
 verify_jwt = false
+
+[functions.delete-from-s3]
+verify_jwt = false

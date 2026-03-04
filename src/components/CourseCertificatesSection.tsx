@@ -111,8 +111,12 @@ const CourseCertificatesSection = ({ professionalId }: Props) => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, certificateUrl?: string) => {
     try {
+      if (certificateUrl) {
+        const { deleteFromStorage } = await import("@/lib/deleteFromStorage");
+        await deleteFromStorage(certificateUrl);
+      }
       const { error } = await supabase.from("professional_courses").delete().eq("id", id);
       if (error) throw error;
       toast.success("Curso removido.");
@@ -153,7 +157,7 @@ const CourseCertificatesSection = ({ professionalId }: Props) => {
                 type="button"
                 variant="ghost"
                 size="icon"
-                onClick={() => handleDelete(course.id)}
+                onClick={() => handleDelete(course.id, course.certificate_url)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

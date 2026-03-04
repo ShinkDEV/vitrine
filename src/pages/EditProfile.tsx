@@ -294,9 +294,13 @@ const EditProfile = () => {
     if (!professional) return;
     setUploading(true);
     try {
+      // Delete old photo from S3 if exists
+      if (professional.profile_photo_url) {
+        const { deleteFromStorage } = await import("@/lib/deleteFromStorage");
+        await deleteFromStorage(professional.profile_photo_url);
+      }
       const path = `${professional.id}/profile.jpg`;
       const publicUrl = await uploadFile(new File([blob], "profile.jpg", { type: "image/jpeg" }), path);
-      // Append cache-buster so browser loads the new image
       const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
       await supabase.from("professionals").update({ profile_photo_url: urlWithCacheBust }).eq("id", professional.id);
       toast.success("Foto de perfil atualizada!");
@@ -384,7 +388,10 @@ const EditProfile = () => {
     }
   };
 
-  const deletePortfolioPhoto = async (photoId: string) => {
+  const deletePortfolioPhoto = async (photoId: string, photoUrl: string) => {
+    // Delete from S3
+    const { deleteFromStorage } = await import("@/lib/deleteFromStorage");
+    await deleteFromStorage(photoUrl);
     await supabase.from("portfolio_photos").delete().eq("id", photoId);
     queryClient.invalidateQueries({ queryKey: ["my-professional-edit"] });
     toast.success("Foto removida.");
@@ -752,7 +759,7 @@ const EditProfile = () => {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        onClick={() => deletePortfolioPhoto(photo.id)}
+                        onClick={() => deletePortfolioPhoto(photo.id, photo.photo_url)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
