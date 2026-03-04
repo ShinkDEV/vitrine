@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.delete-from-s3]
 verify_jwt = false
+
+[functions.approve-changes]
+verify_jwt = false

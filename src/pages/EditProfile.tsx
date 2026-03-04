@@ -111,6 +111,20 @@ const EditProfile = () => {
     enabled: !!professional?.id,
   });
 
+  const { data: pendingChanges } = useQuery({
+    queryKey: ["my-pending-changes", professional?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("pending_changes")
+        .select("id, updated_at")
+        .eq("professional_id", professional!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!professional?.id,
+  });
+
   useEffect(() => {
     if (professional && !formInitialized.current) {
       setForm({
@@ -157,7 +171,7 @@ const EditProfile = () => {
     if (!professional) return;
 
     const cleanSlug = form.slug.toLowerCase().replace(/[^a-z0-9._-]/g, "").replace(/[-_.]{2,}/g, (m) => m[0]).replace(/^[-_.]|[-_.]$/g, "");
-    if (!cleanSlug) return; // Don't auto-save without slug
+    if (!cleanSlug) return;
 
     if (cleanSlug !== professional.slug) {
       const { data: existing } = await supabase
@@ -173,57 +187,103 @@ const EditProfile = () => {
     }
 
     const whatsappClean = form.whatsapp_number.replace(/\D/g, "");
+
+    const profileData = {
+      name: form.name,
+      bio: form.bio,
+      country: form.country,
+      state: form.state,
+      city: form.city,
+      address_street: form.address_street,
+      address_number: form.address_number,
+      address_neighborhood: form.address_neighborhood,
+      address_complement: form.address_complement,
+      whatsapp_number: whatsappClean,
+      whatsapp_link: whatsappClean ? `https://wa.me/${whatsappClean}` : null,
+      payment_methods: form.payment_methods,
+      slug: cleanSlug,
+    };
+
+    const validServices = services.filter(s => s.title.trim()).map((s, i) => ({
+      title: s.title,
+      price: s.priceOnRequest ? null : (s.price ? Number(s.price) : null),
+      duration_minutes: null,
+      order_index: i,
+    }));
+
+    const enabledHours = workingHours.filter((h) => h.enabled).map((h) => ({
+      day_of_week: h.day,
+      open_time: h.open,
+      close_time: h.close,
+    }));
+
+    // If published, save to pending_changes instead of live data
+    if (professional.status === "publicado") {
+      // Also capture current portfolio and photo URLs for the snapshot
+      const { data: portfolioPhotos } = await supabase
+        .from("portfolio_photos")
+        .select("*")
+        .eq("professional_id", professional.id)
+        .order("order_index");
+
+      const { data: certs } = await supabase
+        .from("professional_certificates")
+        .select("*")
+        .eq("professional_id", professional.id);
+
+      const { data: courses } = await supabase
+        .from("professional_courses")
+        .select("*")
+        .eq("professional_id", professional.id);
+
+      const snapshot = {
+        profile: {
+          ...profileData,
+          profile_photo_url: professional.profile_photo_url,
+        },
+        services: validServices,
+        working_hours: enabledHours,
+        portfolio_photos: portfolioPhotos || [],
+        certificates: certs || [],
+        courses: courses || [],
+      };
+
+      // Upsert pending changes
+      const { error: pcError } = await supabase
+        .from("pending_changes")
+        .upsert({
+          professional_id: professional.id,
+          data: snapshot,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "professional_id" });
+      if (pcError) throw pcError;
+
+      return;
+    }
+
+    // Not published: save directly (rascunho, pendente, pausado)
     const { error } = await supabase
       .from("professionals")
       .update({
-        name: form.name,
-        bio: form.bio,
-        country: form.country,
-        state: form.state,
-        city: form.city,
-        address_street: form.address_street,
-        address_number: form.address_number,
-        address_neighborhood: form.address_neighborhood,
-        address_complement: form.address_complement,
-        whatsapp_number: whatsappClean,
-        whatsapp_link: whatsappClean ? `https://wa.me/${whatsappClean}` : null,
-        payment_methods: form.payment_methods,
-        slug: cleanSlug,
+        ...profileData,
         last_portfolio_update: new Date().toISOString(),
-        status: "pendente",
+        status: professional.status === "rascunho" || professional.status === "pausado" ? professional.status : "pendente",
       })
       .eq("id", professional.id);
     if (error) throw error;
 
-    // Delete existing services and re-insert
     await supabase.from("services").delete().eq("professional_id", professional.id);
-    if (services.length > 0) {
-      const validServices = services.filter(s => s.title.trim());
-      if (validServices.length > 0) {
-        const { error: sError } = await supabase.from("services").insert(
-          validServices.map((s, i) => ({
-            professional_id: professional.id,
-            title: s.title,
-            price: s.priceOnRequest ? null : (s.price ? Number(s.price) : null),
-            duration_minutes: null,
-            order_index: i,
-          }))
-        );
-        if (sError) throw sError;
-      }
+    if (validServices.length > 0) {
+      const { error: sError } = await supabase.from("services").insert(
+        validServices.map((s) => ({ ...s, professional_id: professional.id }))
+      );
+      if (sError) throw sError;
     }
 
-    // Save working hours
     await supabase.from("working_hours").delete().eq("professional_id", professional.id);
-    const enabledHours = workingHours.filter((h) => h.enabled);
     if (enabledHours.length > 0) {
       const { error: whError } = await supabase.from("working_hours").insert(
-        enabledHours.map((h) => ({
-          professional_id: professional.id,
-          day_of_week: h.day,
-          open_time: h.open,
-          close_time: h.close,
-        }))
+        enabledHours.map((h) => ({ ...h, professional_id: professional.id }))
       );
       if (whError) throw whError;
     }
@@ -257,9 +317,14 @@ const EditProfile = () => {
   const saveMutation = useMutation({
     mutationFn: performSave,
     onSuccess: () => {
-      toast.success("Perfil atualizado com sucesso.");
+      if (professional?.status === "publicado") {
+        toast.success("Alterações enviadas para aprovação. Seu perfil continua ativo com os dados anteriores.");
+      } else {
+        toast.success("Perfil atualizado com sucesso.");
+      }
       queryClient.invalidateQueries({ queryKey: ["my-professional-edit"] });
       queryClient.invalidateQueries({ queryKey: ["my-professional"] });
+      queryClient.invalidateQueries({ queryKey: ["my-pending-changes"] });
     },
     onError: (err: any) => toast.error(err.message || "Erro ao salvar."),
   });
@@ -411,9 +476,20 @@ const EditProfile = () => {
           <h1 className="text-2xl font-display font-bold text-foreground mb-1">
             Edite suas informações profissionais
           </h1>
-          <p className="text-sm text-muted-foreground mb-8">
+          <p className="text-sm text-muted-foreground mb-4">
             Mantenha seu perfil atualizado para atrair mais clientes.
           </p>
+
+          {professional?.status === "publicado" && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg px-4 py-3 text-sm mb-4">
+              ℹ️ Seu perfil está <strong>publicado</strong>. Alterações serão enviadas para aprovação sem desativar seu perfil atual.
+              {pendingChanges && (
+                <span className="block mt-1 text-xs text-blue-600">
+                  Você tem alterações pendentes de aprovação (enviadas em {new Date(pendingChanges.updated_at).toLocaleDateString("pt-BR")}).
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Auto-save indicator */}
           <div className="flex items-center gap-2 mb-4 h-5">
