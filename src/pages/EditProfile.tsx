@@ -157,7 +157,7 @@ const EditProfile = () => {
     if (!professional) return;
 
     const cleanSlug = form.slug.toLowerCase().replace(/[^a-z0-9._-]/g, "").replace(/[-_.]{2,}/g, (m) => m[0]).replace(/^[-_.]|[-_.]$/g, "");
-    if (!cleanSlug) return; // Don't auto-save without slug
+    if (!cleanSlug) return;
 
     if (cleanSlug !== professional.slug) {
       const { data: existing } = await supabase
@@ -173,57 +173,103 @@ const EditProfile = () => {
     }
 
     const whatsappClean = form.whatsapp_number.replace(/\D/g, "");
+
+    const profileData = {
+      name: form.name,
+      bio: form.bio,
+      country: form.country,
+      state: form.state,
+      city: form.city,
+      address_street: form.address_street,
+      address_number: form.address_number,
+      address_neighborhood: form.address_neighborhood,
+      address_complement: form.address_complement,
+      whatsapp_number: whatsappClean,
+      whatsapp_link: whatsappClean ? `https://wa.me/${whatsappClean}` : null,
+      payment_methods: form.payment_methods,
+      slug: cleanSlug,
+    };
+
+    const validServices = services.filter(s => s.title.trim()).map((s, i) => ({
+      title: s.title,
+      price: s.priceOnRequest ? null : (s.price ? Number(s.price) : null),
+      duration_minutes: null,
+      order_index: i,
+    }));
+
+    const enabledHours = workingHours.filter((h) => h.enabled).map((h) => ({
+      day_of_week: h.day,
+      open_time: h.open,
+      close_time: h.close,
+    }));
+
+    // If published, save to pending_changes instead of live data
+    if (professional.status === "publicado") {
+      // Also capture current portfolio and photo URLs for the snapshot
+      const { data: portfolioPhotos } = await supabase
+        .from("portfolio_photos")
+        .select("*")
+        .eq("professional_id", professional.id)
+        .order("order_index");
+
+      const { data: certs } = await supabase
+        .from("professional_certificates")
+        .select("*")
+        .eq("professional_id", professional.id);
+
+      const { data: courses } = await supabase
+        .from("professional_courses")
+        .select("*")
+        .eq("professional_id", professional.id);
+
+      const snapshot = {
+        profile: {
+          ...profileData,
+          profile_photo_url: professional.profile_photo_url,
+        },
+        services: validServices,
+        working_hours: enabledHours,
+        portfolio_photos: portfolioPhotos || [],
+        certificates: certs || [],
+        courses: courses || [],
+      };
+
+      // Upsert pending changes
+      const { error: pcError } = await supabase
+        .from("pending_changes")
+        .upsert({
+          professional_id: professional.id,
+          data: snapshot,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "professional_id" });
+      if (pcError) throw pcError;
+
+      return;
+    }
+
+    // Not published: save directly (rascunho, pendente, pausado)
     const { error } = await supabase
       .from("professionals")
       .update({
-        name: form.name,
-        bio: form.bio,
-        country: form.country,
-        state: form.state,
-        city: form.city,
-        address_street: form.address_street,
-        address_number: form.address_number,
-        address_neighborhood: form.address_neighborhood,
-        address_complement: form.address_complement,
-        whatsapp_number: whatsappClean,
-        whatsapp_link: whatsappClean ? `https://wa.me/${whatsappClean}` : null,
-        payment_methods: form.payment_methods,
-        slug: cleanSlug,
+        ...profileData,
         last_portfolio_update: new Date().toISOString(),
-        status: "pendente",
+        status: professional.status === "rascunho" || professional.status === "pausado" ? professional.status : "pendente",
       })
       .eq("id", professional.id);
     if (error) throw error;
 
-    // Delete existing services and re-insert
     await supabase.from("services").delete().eq("professional_id", professional.id);
-    if (services.length > 0) {
-      const validServices = services.filter(s => s.title.trim());
-      if (validServices.length > 0) {
-        const { error: sError } = await supabase.from("services").insert(
-          validServices.map((s, i) => ({
-            professional_id: professional.id,
-            title: s.title,
-            price: s.priceOnRequest ? null : (s.price ? Number(s.price) : null),
-            duration_minutes: null,
-            order_index: i,
-          }))
-        );
-        if (sError) throw sError;
-      }
+    if (validServices.length > 0) {
+      const { error: sError } = await supabase.from("services").insert(
+        validServices.map((s) => ({ ...s, professional_id: professional.id }))
+      );
+      if (sError) throw sError;
     }
 
-    // Save working hours
     await supabase.from("working_hours").delete().eq("professional_id", professional.id);
-    const enabledHours = workingHours.filter((h) => h.enabled);
     if (enabledHours.length > 0) {
       const { error: whError } = await supabase.from("working_hours").insert(
-        enabledHours.map((h) => ({
-          professional_id: professional.id,
-          day_of_week: h.day,
-          open_time: h.open,
-          close_time: h.close,
-        }))
+        enabledHours.map((h) => ({ ...h, professional_id: professional.id }))
       );
       if (whError) throw whError;
     }
