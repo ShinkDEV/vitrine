@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, CreditCard, MessageCircle, FileText, Copy, Mail, ExternalLink } from "lucide-react";
+import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, CreditCard, MessageCircle, FileText, Copy, Mail, ExternalLink, GitCompare } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminBannerManager from "@/components/AdminBannerManager";
@@ -33,6 +33,7 @@ const Admin = () => {
   const [sealDialogOpen, setSealDialogOpen] = useState(false);
   const [sealProId, setSealProId] = useState<string | null>(null);
   const [previewPro, setPreviewPro] = useState<any | null>(null);
+  const [compareProId, setCompareProId] = useState<string | null>(null);
 
   // Check if user is admin or colaborador
   const { data: userRoles, isLoading: roleLoading } = useQuery({
@@ -90,14 +91,16 @@ const Admin = () => {
         .select("*, services(*), portfolio_photos(*)")
         .order("updated_at", { ascending: false });
 
-      if (filter !== "todos") {
+      if (filter === "com-alteracoes") {
+        // Special filter: published profiles with pending changes
+        query = query.eq("status", "publicado");
+      } else if (filter !== "todos") {
         query = query.eq("status", filter);
       }
 
       const { data, error } = await query;
       if (error) throw error;
 
-      // Fetch emails from profiles table for all professionals
       if (data && data.length > 0) {
         const userIds = data.map((p) => p.user_id);
         const { data: profiles } = await supabase
@@ -105,7 +108,28 @@ const Admin = () => {
           .select("user_id, email")
           .in("user_id", userIds);
         const emailMap = new Map(profiles?.map((p) => [p.user_id, p.email]) ?? []);
-        return data.map((p) => ({ ...p, _email: emailMap.get(p.user_id) || null }));
+
+        // Fetch pending changes for all professionals
+        const proIds = data.map((p) => p.id);
+        const { data: pendingAll } = await supabase
+          .from("pending_changes")
+          .select("professional_id, updated_at")
+          .in("professional_id", proIds);
+        const pendingMap = new Map(pendingAll?.map((p) => [p.professional_id, p.updated_at]) ?? []);
+
+        let result = data.map((p) => ({
+          ...p,
+          _email: emailMap.get(p.user_id) || null,
+          _hasPending: pendingMap.has(p.id),
+          _pendingDate: pendingMap.get(p.id) || null,
+        }));
+
+        // If filtering by pending changes, only show those
+        if (filter === "com-alteracoes") {
+          result = result.filter((p) => p._hasPending);
+        }
+
+        return result;
       }
 
       return data;
@@ -153,6 +177,41 @@ const Admin = () => {
     enabled: !!previewPro?.id,
   });
 
+  // Fetch pending changes for comparison
+  const { data: pendingChangeData } = useQuery({
+    queryKey: ["pending-change-detail", compareProId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("pending_changes")
+        .select("*")
+        .eq("professional_id", compareProId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!compareProId,
+  });
+
+  // Fetch current data for comparison
+  const { data: currentProData } = useQuery({
+    queryKey: ["current-pro-detail", compareProId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("professionals")
+        .select("*, services(*), portfolio_photos(*)")
+        .eq("id", compareProId!)
+        .maybeSingle();
+      if (error) throw error;
+      // Also get working hours
+      const { data: hours } = await supabase
+        .from("working_hours")
+        .select("*")
+        .eq("professional_id", compareProId!);
+      return { ...data, _working_hours: hours || [] };
+    },
+    enabled: !!compareProId,
+  });
+
   const toggleSeal = useMutation({
     mutationFn: async ({ proId, sealId, assign }: { proId: string; sealId: string; assign: boolean }) => {
       if (assign) {
@@ -196,6 +255,51 @@ const Admin = () => {
     onError: (err: any) => toast.error(err.message || "Erro ao atualizar."),
   });
 
+  const approvePendingChanges = useMutation({
+    mutationFn: async (professionalId: string) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Não autenticado");
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const res = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/approve-changes`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ professional_id: professionalId }),
+        }
+      );
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Erro ao aprovar");
+      }
+    },
+    onSuccess: () => {
+      toast.success("Alterações aprovadas e aplicadas!");
+      setCompareProId(null);
+      queryClient.invalidateQueries({ queryKey: ["admin-professionals"] });
+    },
+    onError: (err: any) => toast.error(err.message || "Erro ao aprovar alterações."),
+  });
+
+  const rejectPendingChanges = useMutation({
+    mutationFn: async (professionalId: string) => {
+      const { error } = await supabase
+        .from("pending_changes")
+        .delete()
+        .eq("professional_id", professionalId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Alterações rejeitadas.");
+      setCompareProId(null);
+      queryClient.invalidateQueries({ queryKey: ["admin-professionals"] });
+    },
+    onError: (err: any) => toast.error(err.message || "Erro ao rejeitar."),
+  });
+
   if (authLoading || roleLoading || !hasAccess) return null;
 
   const handleReject = (id: string) => {
@@ -216,11 +320,33 @@ const Admin = () => {
 
   const filters = [
     { value: "pendente", label: "Aguardando Aprovação" },
+    { value: "com-alteracoes", label: "Com Alterações Pendentes" },
     { value: "publicado", label: "Publicados" },
     { value: "pausado", label: "Pausados" },
     { value: "rascunho", label: "Rascunhos" },
     { value: "todos", label: "Todos" },
   ];
+
+  const DAY_NAMES = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+  const renderCompareField = (label: string, current: any, pending: any) => {
+    const changed = JSON.stringify(current) !== JSON.stringify(pending);
+    if (!changed && !current && !pending) return null;
+    return (
+      <div className={`grid grid-cols-2 gap-3 p-2 rounded ${changed ? "bg-yellow-50 border border-yellow-200" : ""}`}>
+        <div>
+          <span className="text-xs font-medium text-muted-foreground">{label} (atual)</span>
+          <p className="text-sm text-foreground">{current || "—"}</p>
+        </div>
+        <div>
+          <span className="text-xs font-medium text-muted-foreground">{label} (novo)</span>
+          <p className={`text-sm ${changed ? "text-primary font-medium" : "text-foreground"}`}>{pending || "—"}</p>
+        </div>
+      </div>
+    );
+  };
+
+  const pendingData = pendingChangeData?.data as any;
 
   return (
     <div className="min-h-screen bg-background">
@@ -256,7 +382,7 @@ const Admin = () => {
           ) : (
             <div className="space-y-4">
               {professionals.map((rawPro) => {
-                const pro = rawPro as typeof rawPro & { _email?: string | null };
+                const pro = rawPro as typeof rawPro & { _email?: string | null; _hasPending?: boolean; _pendingDate?: string | null };
                 const statusInfo = STATUS_LABELS[pro.status] || STATUS_LABELS.rascunho;
                 return (
                   <div
@@ -282,7 +408,7 @@ const Admin = () => {
                             <span className="text-xs text-muted-foreground truncate">{pro._email}</span>
                             <button
                               type="button"
-                              onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(pro._email); toast.success("Email copiado!"); }}
+                              onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(pro._email!); toast.success("Email copiado!"); }}
                               className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
                             >
                               <Copy className="h-3 w-3" />
@@ -296,6 +422,9 @@ const Admin = () => {
                           {" · "}
                           {pro.portfolio_photos?.length ?? 0} foto(s)
                         </p>
+                        {pro._hasPending && (
+                          <span className="text-xs text-primary font-medium">📝 Alterações pendentes</span>
+                        )}
                       </div>
                     </div>
 
@@ -330,7 +459,18 @@ const Admin = () => {
                           </Button>
                         </>
                       )}
-                      {pro.status === "publicado" && canApprove && (
+                      {pro._hasPending && canApprove && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-primary border-primary/20 hover:bg-primary/5"
+                          onClick={() => setCompareProId(pro.id)}
+                        >
+                          <GitCompare className="h-4 w-4 mr-1" />
+                          Comparar
+                        </Button>
+                      )}
+                      {pro.status === "publicado" && canApprove && !pro._hasPending && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -641,6 +781,134 @@ const Admin = () => {
                     </Button>
                   </div>
                 )}
+              </div>
+            </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Side-by-side comparison dialog */}
+      <Dialog open={!!compareProId} onOpenChange={(v) => { if (!v) setCompareProId(null); }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="flex items-center gap-2">
+              <GitCompare className="h-5 w-5" />
+              Comparação: Atual vs Alterações Pendentes
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Campos destacados em amarelo foram alterados.
+            </p>
+          </DialogHeader>
+          {currentProData && pendingData && (
+            <ScrollArea className="max-h-[70vh] px-6 pb-6">
+              <div className="space-y-2 pt-4">
+                {renderCompareField("Nome", currentProData.name, pendingData.profile?.name)}
+                {renderCompareField("Bio", currentProData.bio, pendingData.profile?.bio)}
+                {renderCompareField("Estado", currentProData.state, pendingData.profile?.state)}
+                {renderCompareField("Cidade", currentProData.city, pendingData.profile?.city)}
+                {renderCompareField("Rua", currentProData.address_street, pendingData.profile?.address_street)}
+                {renderCompareField("Número", currentProData.address_number, pendingData.profile?.address_number)}
+                {renderCompareField("Bairro", currentProData.address_neighborhood, pendingData.profile?.address_neighborhood)}
+                {renderCompareField("WhatsApp", currentProData.whatsapp_number, pendingData.profile?.whatsapp_number)}
+                {renderCompareField("Username", currentProData.slug, pendingData.profile?.slug)}
+                {renderCompareField("Pagamento", currentProData.payment_methods?.join(", "), pendingData.profile?.payment_methods?.join(", "))}
+
+                {/* Services comparison */}
+                <div className="border-t border-border pt-3 mt-3">
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Serviços</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-xs font-medium text-muted-foreground">Atual ({currentProData.services?.length ?? 0})</span>
+                      <div className="space-y-1 mt-1">
+                        {currentProData.services?.sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0)).map((s: any) => (
+                          <p key={s.id} className="text-xs text-foreground">
+                            {s.title} {s.price ? `— R$${Number(s.price).toFixed(2)}` : ""}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-muted-foreground">Novo ({pendingData.services?.length ?? 0})</span>
+                      <div className="space-y-1 mt-1">
+                        {pendingData.services?.map((s: any, i: number) => (
+                          <p key={i} className="text-xs text-foreground">
+                            {s.title} {s.price ? `— R$${Number(s.price).toFixed(2)}` : ""}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Working hours comparison */}
+                <div className="border-t border-border pt-3 mt-3">
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Horários</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-xs font-medium text-muted-foreground">Atual</span>
+                      <div className="space-y-1 mt-1">
+                        {currentProData._working_hours?.map((h: any) => (
+                          <p key={h.id} className="text-xs text-foreground">
+                            {DAY_NAMES[h.day_of_week]}: {h.open_time?.slice(0,5)} - {h.close_time?.slice(0,5)}
+                          </p>
+                        ))}
+                        {(!currentProData._working_hours || currentProData._working_hours.length === 0) && <p className="text-xs text-muted-foreground">—</p>}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-muted-foreground">Novo</span>
+                      <div className="space-y-1 mt-1">
+                        {pendingData.working_hours?.map((h: any, i: number) => (
+                          <p key={i} className="text-xs text-foreground">
+                            {DAY_NAMES[h.day_of_week]}: {h.open_time?.slice(0,5)} - {h.close_time?.slice(0,5)}
+                          </p>
+                        ))}
+                        {(!pendingData.working_hours || pendingData.working_hours.length === 0) && <p className="text-xs text-muted-foreground">—</p>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Portfolio comparison */}
+                <div className="border-t border-border pt-3 mt-3">
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Portfólio</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-xs font-medium text-muted-foreground">Atual ({currentProData.portfolio_photos?.length ?? 0} fotos)</span>
+                      <div className="grid grid-cols-3 gap-1 mt-1">
+                        {currentProData.portfolio_photos?.sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0)).map((p: any) => (
+                          <div key={p.id} className="aspect-square rounded overflow-hidden">
+                            <img src={p.photo_url} alt="" className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-muted-foreground">Novo ({pendingData.portfolio_photos?.length ?? 0} fotos)</span>
+                      <div className="grid grid-cols-3 gap-1 mt-1">
+                        {pendingData.portfolio_photos?.sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0)).map((p: any, i: number) => (
+                          <div key={i} className="aspect-square rounded overflow-hidden">
+                            <img src={p.photo_url} alt="" className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-4 border-t border-border">
+                  <Button size="sm" className="flex-1" onClick={() => approvePendingChanges.mutate(compareProId!)}
+                    disabled={approvePendingChanges.isPending}>
+                    <CheckCircle2 className="h-4 w-4 mr-1" />
+                    {approvePendingChanges.isPending ? "Aplicando..." : "Aprovar Alterações"}
+                  </Button>
+                  <Button size="sm" variant="destructive" className="flex-1" onClick={() => rejectPendingChanges.mutate(compareProId!)}
+                    disabled={rejectPendingChanges.isPending}>
+                    <XCircle className="h-4 w-4 mr-1" />
+                    Rejeitar Alterações
+                  </Button>
+                </div>
               </div>
             </ScrollArea>
           )}
