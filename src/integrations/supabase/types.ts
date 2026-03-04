@@ -194,6 +194,7 @@ export type Database = {
       }
       professional_courses: {
         Row: {
+          certificate_url: string | null
           course_name: string
           course_year: number
           created_at: string
@@ -201,6 +202,7 @@ export type Database = {
           professional_id: string
         }
         Insert: {
+          certificate_url?: string | null
           course_name: string
           course_year: number
           created_at?: string
@@ -208,6 +210,7 @@ export type Database = {
           professional_id: string
         }
         Update: {
+          certificate_url?: string | null
           course_name?: string
           course_year?: number
           created_at?: string
