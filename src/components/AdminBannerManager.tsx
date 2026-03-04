@@ -77,27 +77,9 @@ const AdminBannerManager = () => {
   };
 
   const uploadImage = async (blob: Blob): Promise<string> => {
-    const session = await supabase.auth.getSession();
-    const token = session.data.session?.access_token;
-    if (!token) throw new Error("Não autenticado.");
-
+    const { uploadToStorage } = await import("@/lib/uploadToStorage");
     const path = `banners/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
-    const formData = new FormData();
-    formData.append("file", blob, "banner.jpg");
-    formData.append("path", path);
-
-    const res = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-to-r2`,
-      {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      }
-    );
-
-    if (!res.ok) throw new Error("Falha ao enviar imagem.");
-    const { url } = await res.json();
-    return url;
+    return uploadToStorage(blob, path);
   };
 
   const handleCreateBanner = async () => {
