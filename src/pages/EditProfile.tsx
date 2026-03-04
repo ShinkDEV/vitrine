@@ -294,7 +294,7 @@ const EditProfile = () => {
     setUploading(true);
     try {
       const path = `${professional.id}/profile.jpg`;
-      const publicUrl = await uploadToR2(new File([blob], "profile.jpg", { type: "image/jpeg" }), path);
+      const publicUrl = await uploadFile(new File([blob], "profile.jpg", { type: "image/jpeg" }), path);
       // Append cache-buster so browser loads the new image
       const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
       await supabase.from("professionals").update({ profile_photo_url: urlWithCacheBust }).eq("id", professional.id);
@@ -356,7 +356,7 @@ const EditProfile = () => {
     setUploading(true);
     try {
       const path = `${professional.id}/portfolio-${Date.now()}-${idx}.jpg`;
-      const publicUrl = await uploadToR2(new File([blob], "portfolio.jpg", { type: "image/jpeg" }), path);
+      const publicUrl = await uploadFile(new File([blob], "portfolio.jpg", { type: "image/jpeg" }), path);
       await supabase.from("portfolio_photos").insert({
         professional_id: professional.id,
         photo_url: publicUrl,

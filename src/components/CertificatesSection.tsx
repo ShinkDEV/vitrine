@@ -116,7 +116,7 @@ const CertificatesSection = ({ professionalId, userId }: Props) => {
         .insert({
           professional_id: professionalId,
           file_name: file.name, // Keep original name
-          file_url: result.url,
+          file_url: fileUrl,
           file_type: processedFile.type,
         });
       if (insertError) throw insertError;
