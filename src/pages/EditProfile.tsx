@@ -111,6 +111,20 @@ const EditProfile = () => {
     enabled: !!professional?.id,
   });
 
+  const { data: pendingChanges } = useQuery({
+    queryKey: ["my-pending-changes", professional?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("pending_changes")
+        .select("id, updated_at")
+        .eq("professional_id", professional!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!professional?.id,
+  });
+
   useEffect(() => {
     if (professional && !formInitialized.current) {
       setForm({
