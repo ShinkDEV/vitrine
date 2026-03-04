@@ -111,8 +111,12 @@ const CourseCertificatesSection = ({ professionalId }: Props) => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, certificateUrl?: string) => {
     try {
+      if (certificateUrl) {
+        const { deleteFromStorage } = await import("@/lib/deleteFromStorage");
+        await deleteFromStorage(certificateUrl);
+      }
       const { error } = await supabase.from("professional_courses").delete().eq("id", id);
       if (error) throw error;
       toast.success("Curso removido.");
