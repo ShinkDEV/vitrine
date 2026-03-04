@@ -476,9 +476,20 @@ const EditProfile = () => {
           <h1 className="text-2xl font-display font-bold text-foreground mb-1">
             Edite suas informações profissionais
           </h1>
-          <p className="text-sm text-muted-foreground mb-8">
+          <p className="text-sm text-muted-foreground mb-4">
             Mantenha seu perfil atualizado para atrair mais clientes.
           </p>
+
+          {professional?.status === "publicado" && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg px-4 py-3 text-sm mb-4">
+              ℹ️ Seu perfil está <strong>publicado</strong>. Alterações serão enviadas para aprovação sem desativar seu perfil atual.
+              {pendingChanges && (
+                <span className="block mt-1 text-xs text-blue-600">
+                  Você tem alterações pendentes de aprovação (enviadas em {new Date(pendingChanges.updated_at).toLocaleDateString("pt-BR")}).
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Auto-save indicator */}
           <div className="flex items-center gap-2 mb-4 h-5">
