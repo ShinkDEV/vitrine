@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Upload, ArrowLeft, Clock, FileText, Loader2, Check } from "lucide-react";
 import ProfileCropDialog from "@/components/ProfileCropDialog";
 import PortfolioCropDialog from "@/components/PortfolioCropDialog";
-import CertificatesSection from "@/components/CertificatesSection";
+
 import CourseCertificatesSection from "@/components/CourseCertificatesSection";
 
 const PAYMENT_OPTIONS = ["Pix", "Cartão de Crédito", "Cartão de Débito", "Dinheiro", "Transferência Bancária"];
@@ -98,18 +98,6 @@ const EditProfile = () => {
     enabled: !!professional?.id,
   });
 
-  const { data: certificates } = useQuery({
-    queryKey: ["certificates-count", professional?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("professional_certificates")
-        .select("id")
-        .eq("professional_id", professional!.id);
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!professional?.id,
-  });
 
   const { data: pendingChanges } = useQuery({
     queryKey: ["my-pending-changes", professional?.id],
@@ -865,8 +853,6 @@ const EditProfile = () => {
             {/* Course Certificates */}
             <CourseCertificatesSection professionalId={professional?.id} />
 
-            {/* File Certificates */}
-            <CertificatesSection professionalId={professional?.id} userId={user?.id} />
 
             <Button type="submit" variant="gradient" className="w-full" size="lg" disabled={saveMutation.isPending}>
               {saveMutation.isPending ? "Salvando..." : "Salvar alterações"}
