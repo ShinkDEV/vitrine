@@ -360,10 +360,11 @@ const ProfessionalProfile = () => {
         {/* Courses */}
         {courses && courses.length > 0 && (
           <div className="bg-card rounded-2xl shadow-card p-6 animate-fade-in" style={{ animationDelay: "0.45s" }}>
-            <h2 className="text-lg font-display font-semibold text-foreground mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-display font-semibold text-foreground mb-1 flex items-center gap-2">
               <GraduationCap className="h-5 w-5" />
               Cursos Realizados
             </h2>
+            <p className="text-sm text-muted-foreground mb-4">Cursos e formações concluídos por este profissional.</p>
             <div className="space-y-3">
               {courses.map((course) => (
                 <div key={course.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
