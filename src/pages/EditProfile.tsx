@@ -549,7 +549,7 @@ const EditProfile = () => {
             if (services.length === 0 || !services.some(s => s.title.trim())) { toast.error("Adicione ao menos um serviço."); return; }
             if (!professional?.profile_photo_url) { toast.error("Foto de perfil é obrigatória."); return; }
             if ((professional?.portfolio_photos?.length ?? 0) < 3) { toast.error("Adicione ao menos 3 fotos no portfólio."); return; }
-            if (!certificates || certificates.length === 0) { toast.error("Envie ao menos um certificado."); return; }
+            
             saveMutation.mutate();
           }} className="space-y-6">
             {/* Main Info */}
