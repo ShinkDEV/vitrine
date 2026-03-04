@@ -132,6 +132,9 @@ const CertificatesSection = ({ professionalId, userId }: Props) => {
 
   const handleDelete = async (cert: any) => {
     try {
+      // Delete file from S3
+      const { deleteFromStorage } = await import("@/lib/deleteFromStorage");
+      await deleteFromStorage(cert.file_url);
       await supabase.from("professional_certificates").delete().eq("id", cert.id);
       toast.success("Certificado removido.");
       queryClient.invalidateQueries({ queryKey: ["my-certificates", professionalId] });
