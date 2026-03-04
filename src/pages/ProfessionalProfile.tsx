@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { MapPin, Clock, CreditCard, X, Copy, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Clock, CreditCard, X, Copy, CalendarDays, ChevronLeft, ChevronRight, GraduationCap, ExternalLink } from "lucide-react";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 
@@ -59,6 +59,20 @@ const ProfessionalProfile = () => {
         .select("*")
         .eq("professional_id", professional!.id)
         .order("day_of_week");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!professional?.id,
+  });
+
+  const { data: courses } = useQuery({
+    queryKey: ["professional-courses", professional?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("professional_courses")
+        .select("*")
+        .eq("professional_id", professional!.id)
+        .order("course_year", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -278,6 +292,37 @@ const ProfessionalProfile = () => {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* Courses */}
+        {courses && courses.length > 0 && (
+          <div className="bg-card rounded-2xl shadow-card p-6 animate-fade-in" style={{ animationDelay: "0.35s" }}>
+            <h2 className="text-lg font-display font-semibold text-foreground mb-4 flex items-center gap-2">
+              <GraduationCap className="h-5 w-5" />
+              Cursos Realizados
+            </h2>
+            <div className="space-y-3">
+              {courses.map((course) => (
+                <div key={course.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-foreground">{course.course_name}</span>
+                    {course.certificate_url && (
+                      <a
+                        href={course.certificate_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-primary/80 transition-colors"
+                        title="Ver certificado"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
+                  <span className="text-sm text-muted-foreground">{course.course_year}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}
