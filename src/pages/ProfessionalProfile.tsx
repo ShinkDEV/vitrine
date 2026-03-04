@@ -296,37 +296,6 @@ const ProfessionalProfile = () => {
           </div>
         )}
 
-        {/* Courses */}
-        {courses && courses.length > 0 && (
-          <div className="bg-card rounded-2xl shadow-card p-6 animate-fade-in" style={{ animationDelay: "0.35s" }}>
-            <h2 className="text-lg font-display font-semibold text-foreground mb-4 flex items-center gap-2">
-              <GraduationCap className="h-5 w-5" />
-              Cursos Realizados
-            </h2>
-            <div className="space-y-3">
-              {courses.map((course) => (
-                <div key={course.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-foreground">{course.course_name}</span>
-                    {course.certificate_url && (
-                      <a
-                        href={course.certificate_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:text-primary/80 transition-colors"
-                        title="Ver certificado"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    )}
-                  </div>
-                  <span className="text-sm text-muted-foreground">{course.course_year}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Portfolio */}
         {professional.portfolio_photos && professional.portfolio_photos.length > 0 && (() => {
           const sortedPhotos = [...professional.portfolio_photos].sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
@@ -387,6 +356,37 @@ const ProfessionalProfile = () => {
             </div>
           );
         })()}
+
+        {/* Courses */}
+        {courses && courses.length > 0 && (
+          <div className="bg-card rounded-2xl shadow-card p-6 animate-fade-in" style={{ animationDelay: "0.45s" }}>
+            <h2 className="text-lg font-display font-semibold text-foreground mb-4 flex items-center gap-2">
+              <GraduationCap className="h-5 w-5" />
+              Cursos Realizados
+            </h2>
+            <div className="space-y-3">
+              {courses.map((course) => (
+                <div key={course.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-foreground">{course.course_name}</span>
+                    {course.certificate_url && (
+                      <a
+                        href={course.certificate_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-primary/80 transition-colors"
+                        title="Ver certificado"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
+                  <span className="text-sm text-muted-foreground">{course.course_year}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Member since */}
         <div className="text-center text-xs text-muted-foreground py-2 animate-fade-in" style={{ animationDelay: "0.5s" }}>
