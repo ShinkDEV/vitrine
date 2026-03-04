@@ -157,7 +157,7 @@ const CourseCertificatesSection = ({ professionalId }: Props) => {
                 type="button"
                 variant="ghost"
                 size="icon"
-                onClick={() => handleDelete(course.id)}
+                onClick={() => handleDelete(course.id, course.certificate_url)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
