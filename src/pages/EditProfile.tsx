@@ -759,7 +759,7 @@ const EditProfile = () => {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        onClick={() => deletePortfolioPhoto(photo.id)}
+                        onClick={() => deletePortfolioPhoto(photo.id, photo.photo_url)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
