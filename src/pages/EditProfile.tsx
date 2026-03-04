@@ -774,7 +774,10 @@ const EditProfile = () => {
               <input id="portfolio-file-input" type="file" accept="image/*" multiple className="hidden" onChange={handlePortfolioUpload} disabled={uploading} />
             </div>
 
-            {/* Certificates */}
+            {/* Course Certificates */}
+            <CourseCertificatesSection professionalId={professional?.id} />
+
+            {/* File Certificates */}
             <CertificatesSection professionalId={professional?.id} userId={user?.id} />
 
             <Button type="submit" variant="gradient" className="w-full" size="lg" disabled={saveMutation.isPending}>
