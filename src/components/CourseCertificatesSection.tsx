@@ -92,7 +92,7 @@ const CourseCertificatesSection = ({ professionalId }: Props) => {
 
       if (error) {
         if (error.code === "23505") {
-          toast.error("Este curso já foi adicionado para esse ano.");
+          toast.error(`Certificado "${selectedCourse}" do ano ${year} já enviado.`);
         } else {
           throw error;
         }
