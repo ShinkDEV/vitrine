@@ -192,6 +192,38 @@ export type Database = {
           },
         ]
       }
+      professional_courses: {
+        Row: {
+          course_name: string
+          course_year: number
+          created_at: string
+          id: string
+          professional_id: string
+        }
+        Insert: {
+          course_name: string
+          course_year: number
+          created_at?: string
+          id?: string
+          professional_id: string
+        }
+        Update: {
+          course_name?: string
+          course_year?: number
+          created_at?: string
+          id?: string
+          professional_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_courses_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_seals: {
         Row: {
           assigned_at: string
