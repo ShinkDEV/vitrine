@@ -13,6 +13,7 @@ import { Plus, Trash2, Upload, ArrowLeft, Clock, FileText, Loader2, Check } from
 import ProfileCropDialog from "@/components/ProfileCropDialog";
 import PortfolioCropDialog from "@/components/PortfolioCropDialog";
 import CertificatesSection from "@/components/CertificatesSection";
+import CourseCertificatesSection from "@/components/CourseCertificatesSection";
 
 const PAYMENT_OPTIONS = ["Pix", "Cartão de Crédito", "Cartão de Débito", "Dinheiro", "Transferência Bancária"];
 
