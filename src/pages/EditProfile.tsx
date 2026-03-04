@@ -263,33 +263,9 @@ const EditProfile = () => {
     onError: (err: any) => toast.error(err.message || "Erro ao salvar."),
   });
 
-  const uploadToR2 = async (file: File, path: string): Promise<string> => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error("Não autenticado");
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("path", path);
-
-    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-    const res = await fetch(
-      `https://${projectId}.supabase.co/functions/v1/upload-to-r2`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: formData,
-      }
-    );
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || "Erro no upload");
-    }
-
-    const data = await res.json();
-    return data.url;
+  const uploadFile = async (file: File, path: string): Promise<string> => {
+    const { uploadToStorage } = await import("@/lib/uploadToStorage");
+    return uploadToStorage(file, path);
   };
 
   const processFileForCrop = (file: File, setter: (src: string) => void) => {
@@ -318,7 +294,7 @@ const EditProfile = () => {
     setUploading(true);
     try {
       const path = `${professional.id}/profile.jpg`;
-      const publicUrl = await uploadToR2(new File([blob], "profile.jpg", { type: "image/jpeg" }), path);
+      const publicUrl = await uploadFile(new File([blob], "profile.jpg", { type: "image/jpeg" }), path);
       // Append cache-buster so browser loads the new image
       const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
       await supabase.from("professionals").update({ profile_photo_url: urlWithCacheBust }).eq("id", professional.id);
@@ -380,7 +356,7 @@ const EditProfile = () => {
     setUploading(true);
     try {
       const path = `${professional.id}/portfolio-${Date.now()}-${idx}.jpg`;
-      const publicUrl = await uploadToR2(new File([blob], "portfolio.jpg", { type: "image/jpeg" }), path);
+      const publicUrl = await uploadFile(new File([blob], "portfolio.jpg", { type: "image/jpeg" }), path);
       await supabase.from("portfolio_photos").insert({
         professional_id: professional.id,
         photo_url: publicUrl,

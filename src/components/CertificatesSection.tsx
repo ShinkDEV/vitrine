@@ -105,33 +105,18 @@ const CertificatesSection = ({ professionalId, userId }: Props) => {
 
     setUploading(true);
     try {
+      const { uploadToStorage } = await import("@/lib/uploadToStorage");
       const ext = processedFile.name.split(".").pop();
       const path = `certificates/${userId}/${Date.now()}.${ext}`;
 
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-      if (!token) throw new Error("Não autenticado.");
-
-      const formData = new FormData();
-      formData.append("file", processedFile);
-      formData.append("path", path);
-
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/upload-to-r2`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Erro no upload");
+      const fileUrl = await uploadToStorage(processedFile, path);
 
       const { error: insertError } = await supabase
         .from("professional_certificates")
         .insert({
           professional_id: professionalId,
           file_name: file.name, // Keep original name
-          file_url: result.url,
+          file_url: fileUrl,
           file_type: processedFile.type,
         });
       if (insertError) throw insertError;
