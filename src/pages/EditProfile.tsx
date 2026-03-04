@@ -289,7 +289,11 @@ const EditProfile = () => {
     }
   }, [form, services, workingHours, professional]);
 
-  // Auto-save with debounce
+  // Keep a ref to performSave so auto-save doesn't re-trigger when professional changes
+  const performSaveRef = useRef(performSave);
+  useEffect(() => { performSaveRef.current = performSave; }, [performSave]);
+
+  // Auto-save with debounce - only triggers on form/services/workingHours changes
   useEffect(() => {
     if (!formInitialized.current || !professional) return;
 
@@ -298,7 +302,7 @@ const EditProfile = () => {
     autoSaveTimer.current = setTimeout(async () => {
       setAutoSaveStatus("saving");
       try {
-        await performSave();
+        await performSaveRef.current();
         setAutoSaveStatus("saved");
         queryClient.invalidateQueries({ queryKey: ["my-professional-edit"] });
         queryClient.invalidateQueries({ queryKey: ["my-professional"] });
@@ -312,7 +316,8 @@ const EditProfile = () => {
     return () => {
       if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     };
-  }, [form, services, workingHours, professional, performSave, queryClient]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form, services, workingHours, queryClient]);
 
   const saveMutation = useMutation({
     mutationFn: performSave,
