@@ -30,19 +30,18 @@ async function getSignatureKey(secret: string, dateStamp: string, region: string
   return hmacSha256(key, "aws4_request");
 }
 
-async function putObjectToR2(
-  accountId: string,
+async function putObjectToS3(
   bucketName: string,
   objectKey: string,
   body: Uint8Array,
   contentType: string,
   accessKeyId: string,
   secretAccessKey: string,
+  region: string,
 ) {
-  const region = "auto";
   const service = "s3";
-  const host = `${accountId}.r2.cloudflarestorage.com`;
-  const url = `https://${host}/${bucketName}/${objectKey}`;
+  const host = `${bucketName}.s3.${region}.amazonaws.com`;
+  const url = `https://${host}/${objectKey}`;
 
   const now = new Date();
   const amzDate = now.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
@@ -50,7 +49,6 @@ async function putObjectToR2(
 
   const payloadHash = await sha256Hex(body.buffer as ArrayBuffer);
 
-  // Headers to sign (lowercase, sorted)
   const headersToSign: [string, string][] = [
     ["content-type", contentType],
     ["host", host],
@@ -61,7 +59,7 @@ async function putObjectToR2(
   const signedHeadersStr = headersToSign.map(([k]) => k).join(";");
   const canonicalHeadersStr = headersToSign.map(([k, v]) => `${k}:${v}\n`).join("");
 
-  const canonicalUri = `/${bucketName}/${objectKey}`;
+  const canonicalUri = `/${objectKey}`;
   const canonicalQueryString = "";
 
   const canonicalRequest = [
@@ -107,7 +105,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Auth check
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -131,16 +128,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get R2 credentials
-    const accountId = Deno.env.get("CLOUDFLARE_ACCOUNT_ID");
-    const accessKeyId = Deno.env.get("CLOUDFLARE_ACCESS_KEY_ID");
-    const secretAccessKey = Deno.env.get("CLOUDFLARE_SECRET_ACCESS_KEY");
-    const bucketName = Deno.env.get("CLOUDFLARE_R2_BUCKET_NAME");
-    const publicUrl = Deno.env.get("CLOUDFLARE_R2_PUBLIC_URL");
+    const accessKeyId = Deno.env.get("AWS_ACCESS_KEY_ID");
+    const secretAccessKey = Deno.env.get("AWS_SECRET_ACCESS_KEY");
+    const publicUrl = Deno.env.get("AWS_S3_PUBLIC_URL");
+    const bucketName = "vitrine-especialistas";
+    const region = "sa-east-1";
 
-    if (!accountId || !accessKeyId || !secretAccessKey || !bucketName || !publicUrl) {
-      console.error("Missing R2 env vars:", { accountId: !!accountId, accessKeyId: !!accessKeyId, secretAccessKey: !!secretAccessKey, bucketName: !!bucketName, publicUrl: !!publicUrl });
-      return new Response(JSON.stringify({ error: "Missing R2 configuration" }), {
+    if (!accessKeyId || !secretAccessKey || !publicUrl) {
+      console.error("Missing AWS env vars:", { accessKeyId: !!accessKeyId, secretAccessKey: !!secretAccessKey, publicUrl: !!publicUrl });
+      return new Response(JSON.stringify({ error: "Missing S3 configuration" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -160,23 +156,22 @@ Deno.serve(async (req) => {
     const fileBytes = new Uint8Array(await file.arrayBuffer());
     const contentType = file.type || "application/octet-stream";
 
-    console.log(`Uploading ${filePath} (${fileBytes.length} bytes, ${contentType}) to R2 bucket ${bucketName}`);
+    console.log(`Uploading ${filePath} (${fileBytes.length} bytes, ${contentType}) to S3 bucket ${bucketName}`);
 
-    const r2Response = await putObjectToR2(
-      accountId, bucketName, filePath, fileBytes, contentType, accessKeyId, secretAccessKey
+    const s3Response = await putObjectToS3(
+      bucketName, filePath, fileBytes, contentType, accessKeyId, secretAccessKey, region
     );
 
-    if (!r2Response.ok) {
-      const errorText = await r2Response.text();
-      console.error(`R2 upload error [${r2Response.status}]:`, errorText);
+    if (!s3Response.ok) {
+      const errorText = await s3Response.text();
+      console.error(`S3 upload error [${s3Response.status}]:`, errorText);
       return new Response(
-        JSON.stringify({ error: `R2 upload failed: ${r2Response.status}`, details: errorText }),
+        JSON.stringify({ error: `S3 upload failed: ${s3Response.status}`, details: errorText }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Consume response body
-    await r2Response.text();
+    await s3Response.text();
 
     const cleanPublicUrl = publicUrl.replace(/\/$/, "");
     const filePublicUrl = `${cleanPublicUrl}/${filePath}`;
