@@ -74,6 +74,13 @@ const CourseCertificatesSection = ({ professionalId }: Props) => {
       return;
     }
 
+    // Client-side duplicate check
+    const duplicate = courses?.find(c => c.course_name === selectedCourse && c.course_year === year);
+    if (duplicate) {
+      toast.error(`Certificado "${selectedCourse}" do ano ${year} já enviado.`);
+      return;
+    }
+
     setAdding(true);
     try {
       // Upload file to S3
