@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, CreditCard, MessageCircle, FileText, Copy, Mail, ExternalLink, GitCompare } from "lucide-react";
+import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, CreditCard, MessageCircle, FileText, Copy, Mail, ExternalLink, GitCompare, GraduationCap } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminBannerManager from "@/components/AdminBannerManager";
@@ -171,6 +171,36 @@ const Admin = () => {
         .select("*")
         .eq("professional_id", previewPro!.id)
         .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!previewPro?.id,
+  });
+
+  // Fetch courses for previewed professional
+  const { data: previewCourses } = useQuery({
+    queryKey: ["professional-courses-admin", previewPro?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("professional_courses")
+        .select("*")
+        .eq("professional_id", previewPro!.id)
+        .order("course_year", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!previewPro?.id,
+  });
+
+  // Fetch working hours for previewed professional
+  const { data: previewWorkingHours } = useQuery({
+    queryKey: ["professional-hours-admin", previewPro?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("working_hours")
+        .select("*")
+        .eq("professional_id", previewPro!.id)
+        .order("day_of_week");
       if (error) throw error;
       return data;
     },
