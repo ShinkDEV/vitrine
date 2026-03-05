@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, CreditCard, MessageCircle, FileText, Copy, Mail, ExternalLink, GitCompare, GraduationCap } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminBannerManager from "@/components/AdminBannerManager";
 import AdminInviteManager from "@/components/AdminInviteManager";
