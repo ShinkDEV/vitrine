@@ -522,9 +522,16 @@ const Admin = () => {
                     </div>
 
                     {/* Status Badge */}
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap ${statusInfo.color}`}>
-                      {statusInfo.label}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap ${statusInfo.color}`}>
+                        {statusInfo.label}
+                      </span>
+                      {pro.status === "pendente" && pro.rejection_reason?.startsWith("[REATIVAÇÃO]") && (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 whitespace-nowrap">
+                          Pausado
+                        </span>
+                      )}
+                    </div>
 
                     {/* Actions */}
                     <div className="flex gap-2 flex-shrink-0">
