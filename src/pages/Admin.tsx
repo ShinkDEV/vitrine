@@ -339,12 +339,29 @@ const Admin = () => {
     setRejectDialogOpen(true);
   };
 
-  const confirmReject = () => {
+  const confirmReject = async () => {
     if (!rejectingId || !rejectionReason.trim()) {
       toast.error("Informe o motivo da rejeição.");
       return;
     }
-    updateStatus.mutate({ id: rejectingId, status: "rascunho", reason: rejectionReason.trim() });
+    updateStatus.mutate(
+      { id: rejectingId, status: "rejeitado", reason: rejectionReason.trim() },
+      {
+        onSuccess: async () => {
+          // Send rejection email
+          try {
+            const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+            await fetch(`https://${projectId}.supabase.co/functions/v1/send-rejection-email`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ professional_id: rejectingId, reason: rejectionReason.trim() }),
+            });
+          } catch (e) {
+            console.error("Failed to send rejection email:", e);
+          }
+        },
+      }
+    );
     setRejectDialogOpen(false);
     setRejectingId(null);
   };
