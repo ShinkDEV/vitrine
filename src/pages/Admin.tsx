@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, CreditCard, MessageCircle, FileText, Copy, Mail, ExternalLink, GitCompare, GraduationCap } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminBannerManager from "@/components/AdminBannerManager";
 import AdminInviteManager from "@/components/AdminInviteManager";
@@ -576,12 +577,48 @@ const Admin = () => {
           <DialogHeader>
             <DialogTitle>Motivo da rejeição</DialogTitle>
           </DialogHeader>
-          <Textarea
-            placeholder="Informe o motivo da rejeição para o profissional..."
-            value={rejectionReason}
-            onChange={(e) => setRejectionReason(e.target.value)}
-            rows={4}
-          />
+          <div className="space-y-3">
+            <Select
+              value={rejectionReason}
+              onValueChange={(val) => {
+                if (val === "__custom__") {
+                  setRejectionReason("");
+                } else {
+                  setRejectionReason(val);
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um motivo..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Cumpra TODOS os requisitos conforme explicado no módulo da plataforma!">Cumpra TODOS os requisitos</SelectItem>
+                <SelectItem value="Foto de perfil não atende ao padrão solicitado">Foto de perfil inadequada</SelectItem>
+                <SelectItem value="Certificados inválidos">Certificados inválidos</SelectItem>
+                <SelectItem value="Formação não encontrada no email cadastrado.">Formação não encontrada</SelectItem>
+                <SelectItem value="Serviços oferecidos não estão claros.">Serviços não claros</SelectItem>
+                <SelectItem value="Fotos do Portfólio não atendem os requisitos">Portfólio inadequado</SelectItem>
+                <SelectItem value="Endereço inexistente">Endereço inexistente</SelectItem>
+                <SelectItem value="__custom__">Outro (escrever motivo)</SelectItem>
+              </SelectContent>
+            </Select>
+            {(rejectionReason === "" || !([
+              "Cumpra TODOS os requisitos conforme explicado no módulo da plataforma!",
+              "Foto de perfil não atende ao padrão solicitado",
+              "Certificados inválidos",
+              "Formação não encontrada no email cadastrado.",
+              "Serviços oferecidos não estão claros.",
+              "Fotos do Portfólio não atendem os requisitos",
+              "Endereço inexistente",
+            ].includes(rejectionReason))) && (
+              <Textarea
+                placeholder="Informe o motivo da rejeição..."
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                rows={3}
+              />
+            )}
+          </div>
           <div className="flex gap-3 justify-end">
             <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>Cancelar</Button>
             <Button variant="destructive" onClick={confirmReject} disabled={updateStatus.isPending}>
