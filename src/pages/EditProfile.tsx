@@ -854,8 +854,22 @@ const EditProfile = () => {
             <CourseCertificatesSection professionalId={professional?.id} />
 
 
-            <Button type="submit" variant="gradient" className="w-full" size="lg" disabled={saveMutation.isPending}>
+            <Button type="submit" variant="outline" className="w-full" size="lg" disabled={saveMutation.isPending}>
               {saveMutation.isPending ? "Salvando..." : "Salvar alterações"}
+            </Button>
+            <Button
+              type="button"
+              variant="gradient"
+              className="w-full"
+              size="lg"
+              disabled={saveMutation.isPending}
+              onClick={() => {
+                saveMutation.mutate(undefined, {
+                  onSuccess: () => navigate("/dashboard"),
+                });
+              }}
+            >
+              {saveMutation.isPending ? "Salvando..." : "Salvar alterações e Voltar ao Início"}
             </Button>
           </form>
         </div>
