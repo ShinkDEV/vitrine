@@ -93,7 +93,7 @@ const Dashboard = () => {
   const completedCount = checks.filter((c) => c.done).length;
   const completionPercent = Math.round((completedCount / checks.length) * 100);
   const isComplete = completionPercent === 100;
-  const canSubmitForApproval = isComplete && professional?.status === "rascunho";
+  const canSubmitForApproval = isComplete && (professional?.status === "rascunho" || professional?.status === "rejeitado");
 
   return (
     <div className="min-h-screen bg-background">
@@ -183,12 +183,42 @@ const Dashboard = () => {
             ))}
           </div>
 
+          {/* Rejection Warning */}
+          {professional?.status === "rejeitado" && (
+            <div className="mb-6 p-5 rounded-xl bg-destructive/10 border-2 border-destructive/40 flex items-start gap-3 animate-fade-in">
+              <AlertTriangle className="h-6 w-6 text-destructive flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-base font-bold text-destructive">Rejeitado, aguardando correção</p>
+                {professional.rejection_reason && (
+                  <div className="mt-2 p-3 rounded-lg bg-destructive/5 border border-destructive/20">
+                    <p className="text-sm font-semibold text-destructive/90 mb-1">Motivo da rejeição:</p>
+                    <p className="text-sm text-foreground">{professional.rejection_reason}</p>
+                  </div>
+                )}
+                <p className="text-sm text-muted-foreground mt-2">
+                  Corrija os pontos indicados e envie novamente para aprovação.
+                </p>
+                <Button variant="destructive" size="sm" className="mt-3" asChild>
+                  <Link to="/editar-perfil">Corrigir e reenviar</Link>
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Status */}
           {professional && (
             <div className="mb-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent text-sm">
               <span className="text-muted-foreground">Status:</span>
-              <span className={`font-medium capitalize ${professional.status === "desativado" ? "text-destructive" : "text-accent-foreground"}`}>
-                {professional.status === "desativado" ? "Desativado por falta de atualização" : professional.status}
+              <span className={`font-medium capitalize ${
+                professional.status === "desativado" || professional.status === "rejeitado" 
+                  ? "text-destructive" 
+                  : "text-accent-foreground"
+              }`}>
+                {professional.status === "desativado" 
+                  ? "Desativado por falta de atualização" 
+                  : professional.status === "rejeitado"
+                  ? "Rejeitado, aguardando correção"
+                  : professional.status}
               </span>
             </div>
           )}
