@@ -278,6 +278,34 @@ const Admin = () => {
         .update(updateData)
         .eq("id", id);
       if (error) throw error;
+
+      // Send approval email when publishing
+      if (status === "publicado") {
+        try {
+          const { data: pro } = await supabase
+            .from("professionals")
+            .select("name, slug, user_id")
+            .eq("id", id)
+            .single();
+          if (pro) {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("email")
+              .eq("user_id", pro.user_id)
+              .maybeSingle();
+            if (profile?.email) {
+              const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+              await fetch(`https://${projectId}.supabase.co/functions/v1/send-profile-published-email`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: pro.name, email: profile.email, slug: pro.slug }),
+              });
+            }
+          }
+        } catch (e) {
+          console.error("Failed to send approval email:", e);
+        }
+      }
     },
     onSuccess: () => {
       toast.success("Status atualizado!");
