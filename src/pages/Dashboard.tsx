@@ -62,7 +62,7 @@ const Dashboard = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Perfil enviado para aprovação!");
+      toast.success("Pronto! Seu perfil foi preenchido e está aguardando aprovação! 🎉", { duration: 6000 });
       queryClient.invalidateQueries({ queryKey: ["my-professional"] });
     },
     onError: (err: any) => toast.error(err.message || "Erro ao enviar para aprovação."),
