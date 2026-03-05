@@ -756,6 +756,100 @@ const Admin = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Delete / Block dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <Trash2 className="h-5 w-5" />
+              Deletar perfil
+            </DialogTitle>
+          </DialogHeader>
+          {deletingPro && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Você está prestes a deletar permanentemente o perfil de <strong>{deletingPro.name}</strong> e sua conta de acesso.
+              </p>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Motivo da exclusão *</label>
+                <Textarea
+                  placeholder="Informe o motivo da exclusão..."
+                  value={deleteReason}
+                  onChange={(e) => setDeleteReason(e.target.value)}
+                  rows={3}
+                />
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-destructive/5 border border-destructive/20">
+                <Checkbox
+                  id="block-user"
+                  checked={blockUser}
+                  onCheckedChange={(v) => setBlockUser(v === true)}
+                />
+                <div>
+                  <label htmlFor="block-user" className="text-sm font-medium text-foreground cursor-pointer flex items-center gap-1.5">
+                    <ShieldBan className="h-4 w-4 text-destructive" />
+                    Bloquear este usuário
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Impede que este e-mail{deletingPro.cpf ? " e CPF" : ""} criem uma nova conta.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3 justify-end">
+                <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancelar</Button>
+                <Button
+                  variant="destructive"
+                  disabled={deleteLoading || !deleteReason.trim()}
+                  onClick={async () => {
+                    if (!deleteReason.trim()) {
+                      toast.error("Informe o motivo da exclusão.");
+                      return;
+                    }
+                    setDeleteLoading(true);
+                    try {
+                      const { data: { session } } = await supabase.auth.getSession();
+                      if (!session) throw new Error("Não autenticado");
+                      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+                      const res = await fetch(
+                        `https://${projectId}.supabase.co/functions/v1/delete-profile`,
+                        {
+                          method: "POST",
+                          headers: {
+                            Authorization: `Bearer ${session.access_token}`,
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            professional_id: deletingPro.id,
+                            reason: deleteReason.trim(),
+                            block: blockUser,
+                            block_email: deletingPro._email,
+                            block_cpf: deletingPro.cpf,
+                          }),
+                        }
+                      );
+                      if (!res.ok) {
+                        const err = await res.json();
+                        throw new Error(err.error || "Erro ao deletar");
+                      }
+                      toast.success("Perfil deletado com sucesso.");
+                      setDeleteDialogOpen(false);
+                      setDeletingPro(null);
+                      queryClient.invalidateQueries({ queryKey: ["admin-professionals"] });
+                    } catch (err: any) {
+                      toast.error(err.message || "Erro ao deletar perfil.");
+                    } finally {
+                      setDeleteLoading(false);
+                    }
+                  }}
+                >
+                  {deleteLoading ? "Deletando..." : "Deletar permanentemente"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={sealDialogOpen} onOpenChange={(v) => { setSealDialogOpen(v); if (!v) setSealProId(null); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
