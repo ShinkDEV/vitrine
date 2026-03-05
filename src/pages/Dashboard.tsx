@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,8 +6,12 @@ import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { CheckCircle2, Circle, Edit, ExternalLink, Send, AlertTriangle, Ban } from "lucide-react";
+import { CheckCircle2, Circle, Edit, ExternalLink, Send, AlertTriangle, Ban, RotateCcw } from "lucide-react";
 import BannerCarousel from "@/components/BannerCarousel";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -52,6 +56,11 @@ const Dashboard = () => {
     enabled: !!user,
   });
 
+  // Reactivation dialog state
+  const [reactivateOpen, setReactivateOpen] = useState(false);
+  const [reactivateOption, setReactivateOption] = useState("dados-atualizados");
+  const [reactivateCustom, setReactivateCustom] = useState("");
+
   const submitForApproval = useMutation({
     mutationFn: async () => {
       if (!professional) return;
@@ -66,6 +75,28 @@ const Dashboard = () => {
       queryClient.invalidateQueries({ queryKey: ["my-professional"] });
     },
     onError: (err: any) => toast.error(err.message || "Erro ao enviar para aprovação."),
+  });
+
+  const requestReactivation = useMutation({
+    mutationFn: async () => {
+      if (!professional) return;
+      const reason = reactivateOption === "dados-atualizados"
+        ? "[REATIVAÇÃO] Dados atualizados conforme solicitado"
+        : `[REATIVAÇÃO] ${reactivateCustom.trim()}`;
+      const { error } = await supabase
+        .from("professionals")
+        .update({ status: "pendente", rejection_reason: reason })
+        .eq("id", professional.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Solicitação de reativação enviada! Aguarde a aprovação do admin. 🎉", { duration: 6000 });
+      setReactivateOpen(false);
+      setReactivateOption("dados-atualizados");
+      setReactivateCustom("");
+      queryClient.invalidateQueries({ queryKey: ["my-professional"] });
+    },
+    onError: (err: any) => toast.error(err.message || "Erro ao solicitar reativação."),
   });
   // Portfolio update check (6 months)
   const portfolioUpdateStatus = useMemo(() => {
@@ -220,6 +251,21 @@ const Dashboard = () => {
                 <p className="text-sm text-muted-foreground mt-2">
                   Seu perfil não está visível para clientes enquanto estiver pausado.
                 </p>
+                <div className="flex gap-2 mt-3">
+                  <Button variant="outline" size="sm" className="border-orange-400 text-orange-800 hover:bg-orange-100" asChild>
+                    <Link to="/editar-perfil">Editar perfil</Link>
+                  </Button>
+                  {isComplete && (
+                    <Button
+                      size="sm"
+                      className="bg-orange-600 text-white hover:bg-orange-700"
+                      onClick={() => setReactivateOpen(true)}
+                    >
+                      <RotateCcw className="h-4 w-4 mr-2" />
+                      Solicitar Reativação
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -274,6 +320,43 @@ const Dashboard = () => {
         </div>
 
         <BannerCarousel placement="dashboard" />
+
+        {/* Reactivation Dialog */}
+        <Dialog open={reactivateOpen} onOpenChange={setReactivateOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Solicitar Reativação</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">Selecione o motivo da solicitação de reativação:</p>
+            <RadioGroup value={reactivateOption} onValueChange={setReactivateOption} className="space-y-3 mt-2">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="dados-atualizados" id="opt1" />
+                <Label htmlFor="opt1" className="text-sm cursor-pointer">Dados atualizados conforme solicitado</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="outro" id="opt2" />
+                <Label htmlFor="opt2" className="text-sm cursor-pointer">Outro</Label>
+              </div>
+            </RadioGroup>
+            {reactivateOption === "outro" && (
+              <Textarea
+                placeholder="Descreva o motivo..."
+                value={reactivateCustom}
+                onChange={(e) => setReactivateCustom(e.target.value)}
+                className="mt-2"
+              />
+            )}
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={() => setReactivateOpen(false)}>Cancelar</Button>
+              <Button
+                onClick={() => requestReactivation.mutate()}
+                disabled={requestReactivation.isPending || (reactivateOption === "outro" && !reactivateCustom.trim())}
+              >
+                {requestReactivation.isPending ? "Enviando..." : "Enviar solicitação"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
