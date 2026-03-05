@@ -297,12 +297,13 @@ const Dashboard = () => {
             </Button>
             {canSubmitForApproval && (
               <Button
-                variant="outline"
+                className="bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite] hover:animate-none hover:scale-105 ring-2 ring-green-400/50 font-semibold"
+                size="lg"
                 onClick={() => submitForApproval.mutate()}
                 disabled={submitForApproval.isPending}
               >
-                <Send className="h-4 w-4 mr-2" />
-                {submitForApproval.isPending ? "Enviando..." : "Enviar para aprovação"}
+                <Send className="h-5 w-5 mr-2" />
+                {submitForApproval.isPending ? "Enviando..." : "🚀 Enviar para aprovação"}
               </Button>
             )}
             {professional?.status === "pendente" && (
