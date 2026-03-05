@@ -567,13 +567,13 @@ const Admin = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => updateStatus.mutate({ id: pro.id, status: "pausado" })}
+                          onClick={() => {
+                            setPausingId(pro.id);
+                            setPauseReason("");
+                            setPauseDialogOpen(true);
+                          }}
                           disabled={updateStatus.isPending}
                         >
-                          <Pause className="h-4 w-4 mr-1" />
-                          Pausar
-                        </Button>
-                      )}
                       {pro.status === "pausado" && canApprove && (
                         <Button
                           size="sm"
