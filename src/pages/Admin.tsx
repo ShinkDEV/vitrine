@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, CreditCard, MessageCircle, FileText, Copy, Mail, ExternalLink, GitCompare, GraduationCap } from "lucide-react";
+import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, CreditCard, MessageCircle, FileText, Copy, Mail, ExternalLink, GitCompare, GraduationCap, Trash2, ShieldBan } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -38,6 +38,11 @@ const Admin = () => {
   const [sealProId, setSealProId] = useState<string | null>(null);
   const [previewPro, setPreviewPro] = useState<any | null>(null);
   const [compareProId, setCompareProId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingPro, setDeletingPro] = useState<any | null>(null);
+  const [deleteReason, setDeleteReason] = useState("");
+  const [blockUser, setBlockUser] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Check if user is admin or colaborador
   const { data: userRoles, isLoading: roleLoading } = useQuery({
@@ -629,6 +634,21 @@ const Admin = () => {
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
+                      {isAdmin && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => {
+                            setDeletingPro(pro);
+                            setDeleteReason("");
+                            setBlockUser(false);
+                            setDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 );
