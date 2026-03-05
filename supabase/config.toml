@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.send-paused-email]
 verify_jwt = false
+
+[functions.delete-profile]
+verify_jwt = false
