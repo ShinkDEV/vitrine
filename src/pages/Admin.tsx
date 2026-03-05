@@ -694,7 +694,41 @@ const Admin = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Seal management dialog */}
+      {/* Pause reason dialog */}
+      <Dialog open={pauseDialogOpen} onOpenChange={setPauseDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Motivo da pausa</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Textarea
+              placeholder="Informe o motivo da pausa..."
+              value={pauseReason}
+              onChange={(e) => setPauseReason(e.target.value)}
+              rows={3}
+            />
+          </div>
+          <div className="flex gap-3 justify-end">
+            <Button variant="outline" onClick={() => setPauseDialogOpen(false)}>Cancelar</Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (!pausingId || !pauseReason.trim()) {
+                  toast.error("Informe o motivo da pausa.");
+                  return;
+                }
+                updateStatus.mutate({ id: pausingId, status: "pausado", reason: pauseReason.trim() });
+                setPauseDialogOpen(false);
+                setPausingId(null);
+              }}
+              disabled={updateStatus.isPending}
+            >
+              {updateStatus.isPending ? "Pausando..." : "Confirmar pausa"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={sealDialogOpen} onOpenChange={(v) => { setSealDialogOpen(v); if (!v) setSealProId(null); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
