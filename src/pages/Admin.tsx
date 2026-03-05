@@ -31,6 +31,9 @@ const Admin = () => {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
+  const [pausingId, setPausingId] = useState<string | null>(null);
+  const [pauseReason, setPauseReason] = useState("");
   const [sealDialogOpen, setSealDialogOpen] = useState(false);
   const [sealProId, setSealProId] = useState<string | null>(null);
   const [previewPro, setPreviewPro] = useState<any | null>(null);
@@ -314,7 +317,7 @@ const Admin = () => {
           await fetch(`https://${projectId}.supabase.co/functions/v1/send-paused-email`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ professional_id: id }),
+            body: JSON.stringify({ professional_id: id, reason }),
           });
         } catch (e) {
           console.error("Failed to send paused email:", e);
@@ -564,7 +567,11 @@ const Admin = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => updateStatus.mutate({ id: pro.id, status: "pausado" })}
+                          onClick={() => {
+                            setPausingId(pro.id);
+                            setPauseReason("");
+                            setPauseDialogOpen(true);
+                          }}
                           disabled={updateStatus.isPending}
                         >
                           <Pause className="h-4 w-4 mr-1" />
@@ -687,7 +694,41 @@ const Admin = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Seal management dialog */}
+      {/* Pause reason dialog */}
+      <Dialog open={pauseDialogOpen} onOpenChange={setPauseDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Motivo da pausa</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Textarea
+              placeholder="Informe o motivo da pausa..."
+              value={pauseReason}
+              onChange={(e) => setPauseReason(e.target.value)}
+              rows={3}
+            />
+          </div>
+          <div className="flex gap-3 justify-end">
+            <Button variant="outline" onClick={() => setPauseDialogOpen(false)}>Cancelar</Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (!pausingId || !pauseReason.trim()) {
+                  toast.error("Informe o motivo da pausa.");
+                  return;
+                }
+                updateStatus.mutate({ id: pausingId, status: "pausado", reason: pauseReason.trim() });
+                setPauseDialogOpen(false);
+                setPausingId(null);
+              }}
+              disabled={updateStatus.isPending}
+            >
+              {updateStatus.isPending ? "Pausando..." : "Confirmar pausa"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={sealDialogOpen} onOpenChange={(v) => { setSealDialogOpen(v); if (!v) setSealProId(null); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>

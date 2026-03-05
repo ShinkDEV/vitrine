@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { professional_id } = await req.json();
+    const { professional_id, reason } = await req.json();
 
     if (!professional_id) {
       return new Response(JSON.stringify({ error: "Missing professional_id" }), {
@@ -110,13 +110,14 @@ Deno.serve(async (req) => {
         Olá, <strong>${prof.name}</strong>.
       </p>
       <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 12px;">
-        Seu perfil na <strong style="color:#b8396b;">Vitrine dos Especialistas da Beleza</strong> foi <strong style="color:#ea580c;">pausado</strong> pela administração.
+      Seu perfil na <strong style="color:#b8396b;">Vitrine dos Especialistas da Beleza</strong> foi <strong style="color:#ea580c;">pausado</strong> pela administração.
       </p>
+      ${reason ? `
+      <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:20px;margin:20px 0;">
+        <p style="color:#9a3412;font-size:14px;font-weight:600;margin:0 0 8px;">📋 Motivo da pausa:</p>
+        <p style="color:#374151;font-size:15px;line-height:1.6;margin:0;">${reason}</p>
+      </div>` : ''}
       <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 12px;">
-        Enquanto pausado, seu perfil não aparecerá nos resultados de busca e clientes não poderão encontrá-lo(a).
-      </p>
-      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 12px;">
-        Se tiver dúvidas sobre o motivo, entre em contato conosco.
       </p>
       ${brandButton("Acessar minha conta", "https://vitrine.escola.ro/dashboard")}
       <p style="color:#a3738e;font-size:14px;line-height:1.5;margin:0;">

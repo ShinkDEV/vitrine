@@ -205,7 +205,25 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* Status */}
+          {/* Paused Warning */}
+          {professional?.status === "pausado" && (
+            <div className="mb-6 p-5 rounded-xl bg-orange-50 border-2 border-orange-300 flex items-start gap-3 animate-fade-in">
+              <AlertTriangle className="h-6 w-6 text-orange-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-base font-bold text-orange-700">Perfil pausado</p>
+                {professional.rejection_reason && (
+                  <div className="mt-2 p-3 rounded-lg bg-orange-50 border border-orange-200">
+                    <p className="text-sm font-semibold text-orange-800 mb-1">Motivo da pausa:</p>
+                    <p className="text-sm text-foreground">{professional.rejection_reason}</p>
+                  </div>
+                )}
+                <p className="text-sm text-muted-foreground mt-2">
+                  Seu perfil não está visível para clientes enquanto estiver pausado.
+                </p>
+              </div>
+            </div>
+          )}
+
           {professional && (
             <div className="mb-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent text-sm">
               <span className="text-muted-foreground">Status:</span>
