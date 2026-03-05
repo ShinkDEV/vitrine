@@ -317,7 +317,7 @@ const Admin = () => {
           await fetch(`https://${projectId}.supabase.co/functions/v1/send-paused-email`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ professional_id: id }),
+            body: JSON.stringify({ professional_id: id, reason }),
           });
         } catch (e) {
           console.error("Failed to send paused email:", e);
