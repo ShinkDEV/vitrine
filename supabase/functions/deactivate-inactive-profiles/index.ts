@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
           <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 12px;">
             Para reativar, basta atualizar seu portfólio e enviar para aprovação novamente.
           </p>
-          ${brandButton("Reativar meu perfil", "https://kind-logic.lovable.app/editar-perfil")}
+          ${brandButton("Reativar meu perfil", "https://vitrine.escola.ro/editar-perfil")}
           <p style="color:#a3738e;font-size:14px;line-height:1.5;margin:0;">
             Se tiver dúvidas, entre em contato conosco.
           </p>

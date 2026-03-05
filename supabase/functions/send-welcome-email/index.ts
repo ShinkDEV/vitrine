@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
       <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 8px;">
         Agora você pode completar seu perfil, adicionar seus serviços e fotos do portfólio para ser encontrado(a) por clientes da sua região.
       </p>
-      ${brandButton("Acessar minha conta", "https://kind-logic.lovable.app/login")}
+      ${brandButton("Acessar minha conta", "https://vitrine.escola.ro/login")}
       <p style="color:#a3738e;font-size:14px;line-height:1.5;margin:0;">
         Se precisar de ajuda, entre em contato conosco.
       </p>

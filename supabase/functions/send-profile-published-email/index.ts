@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const profileUrl = `https://kind-logic.lovable.app/profissional/${slug}`;
+    const profileUrl = `https://vitrine.escola.ro/profissional/${slug}`;
 
     const html = emailWrapper(`
       <h1 style="margin:0 0 16px;color:#8b2560;font-size:24px;font-weight:700;">
