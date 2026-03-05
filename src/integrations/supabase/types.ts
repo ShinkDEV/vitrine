@@ -53,6 +53,36 @@ export type Database = {
         }
         Relationships: []
       }
+      blocked_users: {
+        Row: {
+          blocked_by: string
+          cpf: string | null
+          created_at: string
+          email: string | null
+          id: string
+          professional_name: string | null
+          reason: string
+        }
+        Insert: {
+          blocked_by: string
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          professional_name?: string | null
+          reason: string
+        }
+        Update: {
+          blocked_by?: string
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          professional_name?: string | null
+          reason?: string
+        }
+        Relationships: []
+      }
       collaborator_permissions: {
         Row: {
           can_approve_profiles: boolean
@@ -307,6 +337,7 @@ export type Database = {
           bio: string | null
           city: string | null
           country: string | null
+          cpf: string | null
           created_at: string
           id: string
           last_portfolio_update: string | null
@@ -330,6 +361,7 @@ export type Database = {
           bio?: string | null
           city?: string | null
           country?: string | null
+          cpf?: string | null
           created_at?: string
           id?: string
           last_portfolio_update?: string | null
@@ -353,6 +385,7 @@ export type Database = {
           bio?: string | null
           city?: string | null
           country?: string | null
+          cpf?: string | null
           created_at?: string
           id?: string
           last_portfolio_update?: string | null

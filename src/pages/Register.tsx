@@ -62,6 +62,17 @@ const Register = () => {
     }
     setLoading(true);
     try {
+      // Check if email is blocked
+      const { data: blocked } = await supabase
+        .from("blocked_users")
+        .select("id")
+        .eq("email", email.trim().toLowerCase())
+        .maybeSingle();
+      if (blocked) {
+        toast.error("Este e-mail está bloqueado. Entre em contato com o administrador.");
+        setLoading(false);
+        return;
+      }
       // Call edge function which creates the user AND sends branded confirmation email
       const { data: fnData, error: fnError } = await supabase.functions.invoke(
         "send-confirmation-email",
