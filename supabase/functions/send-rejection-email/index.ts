@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
       <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 12px;">
         Corrija os pontos indicados e envie novamente para aprovação.
       </p>
-      ${brandButton("Corrigir meu perfil", "https://kind-logic.lovable.app/editar-perfil")}
+      ${brandButton("Corrigir meu perfil", "https://vitrine.escola.ro/editar-perfil")}
       <p style="color:#a3738e;font-size:14px;line-height:1.5;margin:0;">
         Se tiver dúvidas, entre em contato conosco.
       </p>

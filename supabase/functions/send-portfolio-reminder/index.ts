@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
             <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 12px;">
               Para manter seu perfil ativo e visível para clientes, atualize seu portfólio o mais rápido possível.
             </p>
-            ${brandButton("Atualizar meu portfólio", "https://kind-logic.lovable.app/editar-perfil")}
+            ${brandButton("Atualizar meu portfólio", "https://vitrine.escola.ro/editar-perfil")}
           `
           : `
             <h1 style="margin:0 0 16px;color:#8b2560;font-size:24px;font-weight:700;">
@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
             <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 12px;">
               Mantenha seu perfil atualizado para continuar sendo encontrado(a) por clientes! Adicione novas fotos e atualize seus serviços.
             </p>
-            ${brandButton("Atualizar meu portfólio", "https://kind-logic.lovable.app/editar-perfil")}
+            ${brandButton("Atualizar meu portfólio", "https://vitrine.escola.ro/editar-perfil")}
           `
       );
 
