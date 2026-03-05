@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, CreditCard, MessageCircle, FileText, Copy, Mail, ExternalLink, GitCompare } from "lucide-react";
+import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, CreditCard, MessageCircle, FileText, Copy, Mail, ExternalLink, GitCompare, GraduationCap } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminBannerManager from "@/components/AdminBannerManager";
@@ -171,6 +171,36 @@ const Admin = () => {
         .select("*")
         .eq("professional_id", previewPro!.id)
         .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!previewPro?.id,
+  });
+
+  // Fetch courses for previewed professional
+  const { data: previewCourses } = useQuery({
+    queryKey: ["professional-courses-admin", previewPro?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("professional_courses")
+        .select("*")
+        .eq("professional_id", previewPro!.id)
+        .order("course_year", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!previewPro?.id,
+  });
+
+  // Fetch working hours for previewed professional
+  const { data: previewWorkingHours } = useQuery({
+    queryKey: ["professional-hours-admin", previewPro?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("working_hours")
+        .select("*")
+        .eq("professional_id", previewPro!.id)
+        .order("day_of_week");
       if (error) throw error;
       return data;
     },
@@ -726,6 +756,41 @@ const Admin = () => {
                             <img src={p.photo_url} alt="Portfólio" className="w-full h-full object-cover" />
                           </div>
                         ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Working Hours */}
+                {previewWorkingHours && previewWorkingHours.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                      <Clock className="h-4 w-4" />
+                      Horários de Funcionamento
+                    </h4>
+                    <div className="space-y-1">
+                      {previewWorkingHours.map((h: any) => (
+                        <p key={h.id} className="text-sm text-muted-foreground">
+                          {DAY_NAMES[h.day_of_week]}: {h.open_time?.slice(0,5)} - {h.close_time?.slice(0,5)}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Courses */}
+                {previewCourses && previewCourses.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                      <GraduationCap className="h-4 w-4" />
+                      Cursos Realizados ({previewCourses.length})
+                    </h4>
+                    <div className="space-y-1.5">
+                      {previewCourses.map((c: any) => (
+                        <div key={c.id} className="flex justify-between text-sm border-b border-border pb-1.5 last:border-0">
+                          <span className="text-foreground">{c.course_name}</span>
+                          <span className="text-xs text-muted-foreground">{c.course_year}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
