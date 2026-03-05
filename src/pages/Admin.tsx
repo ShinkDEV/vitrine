@@ -31,6 +31,9 @@ const Admin = () => {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
+  const [pausingId, setPausingId] = useState<string | null>(null);
+  const [pauseReason, setPauseReason] = useState("");
   const [sealDialogOpen, setSealDialogOpen] = useState(false);
   const [sealProId, setSealProId] = useState<string | null>(null);
   const [previewPro, setPreviewPro] = useState<any | null>(null);
