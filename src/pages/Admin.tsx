@@ -574,6 +574,10 @@ const Admin = () => {
                           }}
                           disabled={updateStatus.isPending}
                         >
+                          <Pause className="h-4 w-4 mr-1" />
+                          Pausar
+                        </Button>
+                      )}
                       {pro.status === "pausado" && canApprove && (
                         <Button
                           size="sm"
