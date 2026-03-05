@@ -1,0 +1,2 @@
+ALTER TABLE public.professionals DROP CONSTRAINT professionals_status_check;
+ALTER TABLE public.professionals ADD CONSTRAINT professionals_status_check CHECK (status IN ('rascunho', 'pendente', 'publicado', 'pausado', 'desativado', 'rejeitado'));
