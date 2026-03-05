@@ -760,6 +760,41 @@ const Admin = () => {
                   </div>
                 )}
 
+                {/* Working Hours */}
+                {previewWorkingHours && previewWorkingHours.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                      <Clock className="h-4 w-4" />
+                      Horários de Funcionamento
+                    </h4>
+                    <div className="space-y-1">
+                      {previewWorkingHours.map((h: any) => (
+                        <p key={h.id} className="text-sm text-muted-foreground">
+                          {DAY_NAMES[h.day_of_week]}: {h.open_time?.slice(0,5)} - {h.close_time?.slice(0,5)}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Courses */}
+                {previewCourses && previewCourses.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                      <GraduationCap className="h-4 w-4" />
+                      Cursos Realizados ({previewCourses.length})
+                    </h4>
+                    <div className="space-y-1.5">
+                      {previewCourses.map((c: any) => (
+                        <div key={c.id} className="flex justify-between text-sm border-b border-border pb-1.5 last:border-0">
+                          <span className="text-foreground">{c.course_name}</span>
+                          <span className="text-xs text-muted-foreground">{c.course_year}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Certificates */}
                 {previewCertificates && previewCertificates.length > 0 && (
                   <div>
