@@ -46,6 +46,8 @@ const Register = () => {
     validateInvite();
   }, [inviteCode]);
 
+  const ALLOWED_DOMAINS = ["gmail.com", "outlook.com", "hotmail.com", "yahoo.com", "yahoo.com.br", "icloud.com", "aol.com"];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteCode || !inviteValid) {
@@ -54,6 +56,11 @@ const Register = () => {
     }
     if (!name.trim() || !email.trim() || !password.trim()) {
       toast.error("Preencha todos os campos.");
+      return;
+    }
+    const emailDomain = email.trim().toLowerCase().split("@")[1];
+    if (!emailDomain || !ALLOWED_DOMAINS.includes(emailDomain)) {
+      toast.error("Use um e-mail de provedor público (Gmail, Outlook, Hotmail, Yahoo, iCloud ou AOL).");
       return;
     }
     if (password.length < 6) {
