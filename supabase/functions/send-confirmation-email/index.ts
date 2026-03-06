@@ -63,6 +63,15 @@ Deno.serve(async (req) => {
       });
     }
 
+    const ALLOWED_DOMAINS = ["gmail.com", "outlook.com", "hotmail.com", "yahoo.com", "yahoo.com.br", "icloud.com", "aol.com"];
+    const emailDomain = email.trim().toLowerCase().split("@")[1];
+    if (!emailDomain || !ALLOWED_DOMAINS.includes(emailDomain)) {
+      return new Response(JSON.stringify({ error: "Use um e-mail de provedor público (Gmail, Outlook, Hotmail, Yahoo, iCloud ou AOL)." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
