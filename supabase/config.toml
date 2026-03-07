@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.delete-profile]
 verify_jwt = false
+
+[functions.send-draft-reminder]
+verify_jwt = false
