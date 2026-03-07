@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminBannerManager from "@/components/AdminBannerManager";
 import AdminInviteManager from "@/components/AdminInviteManager";
 import AdminCollaboratorManager from "@/components/AdminCollaboratorManager";
+import AdminSealManager from "@/components/AdminSealManager";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   rascunho: { label: "Rascunho", color: "bg-muted text-muted-foreground" },
@@ -662,6 +663,7 @@ const Admin = () => {
         {isAdmin && <AdminCollaboratorManager />}
         {canManageInvites && <AdminInviteManager />}
         {isAdmin && <AdminBannerManager />}
+        {canManageSeals && <AdminSealManager />}
       </div>
 
       {/* Rejection reason dialog */}
