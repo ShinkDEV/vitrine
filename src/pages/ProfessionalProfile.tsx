@@ -162,6 +162,7 @@ const ProfessionalProfile = () => {
               }}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 mt-0.5"
             >
+              <span className="font-semibold text-foreground">Endereço:</span>{" "}
               {[professional.address_street, professional.address_number, professional.address_neighborhood]
                 .filter(Boolean)
                 .join(", ")}
