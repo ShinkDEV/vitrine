@@ -144,6 +144,9 @@ const ProfessionalProfile = () => {
             )}
           </div>
           <h1 className="text-2xl font-display font-bold text-foreground mb-1">{professional.name}</h1>
+          {(professional as any).member_number && (
+            <p className="text-xs font-medium text-primary/70 mb-1">Inscrito Nº: {(professional as any).member_number}</p>
+          )}
           <p className="text-muted-foreground flex items-center justify-center gap-1 mb-1">
             <MapPin className="h-4 w-4" />
             {professional.city} / {professional.state}

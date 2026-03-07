@@ -341,6 +341,7 @@ export type Database = {
           created_at: string
           id: string
           last_portfolio_update: string | null
+          member_number: number | null
           name: string
           payment_methods: string[] | null
           profile_photo_url: string | null
@@ -365,6 +366,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_portfolio_update?: string | null
+          member_number?: number | null
           name: string
           payment_methods?: string[] | null
           profile_photo_url?: string | null
@@ -389,6 +391,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_portfolio_update?: string | null
+          member_number?: number | null
           name?: string
           payment_methods?: string[] | null
           profile_photo_url?: string | null
