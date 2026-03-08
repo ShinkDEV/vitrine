@@ -1046,8 +1046,21 @@ const Admin = () => {
                     </h4>
                     <div className="space-y-1.5">
                       {previewCourses.map((c: any) => (
-                        <div key={c.id} className="flex justify-between text-sm border-b border-border pb-1.5 last:border-0">
-                          <span className="text-foreground">{c.course_name}</span>
+                        <div key={c.id} className="flex items-center justify-between text-sm border-b border-border pb-1.5 last:border-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-foreground">{c.course_name}</span>
+                            {c.certificate_url && (
+                              <a
+                                href={c.certificate_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:text-primary/80 transition-colors"
+                                title="Ver certificado"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                            )}
+                          </div>
                           <span className="text-xs text-muted-foreground">{c.course_year}</span>
                         </div>
                       ))}
