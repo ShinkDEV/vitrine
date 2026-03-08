@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { toast } from "sonner";
-import { Plus, Trash2, Image, ExternalLink, Pencil } from "lucide-react";
+import { Plus, Trash2, Image, ExternalLink, Pencil, MousePointerClick } from "lucide-react";
 import BannerCropDialog from "@/components/BannerCropDialog";
 
 const AdminBannerManager = () => {
@@ -37,6 +37,25 @@ const AdminBannerManager = () => {
       if (error) throw error;
       return data;
     },
+  });
+
+  const { data: clickCounts } = useQuery({
+    queryKey: ["banner-clicks-count", filterPlacement],
+    queryFn: async () => {
+      if (!banners?.length) return {};
+      const ids = banners.map((b) => b.id);
+      const { data, error } = await supabase
+        .from("banner_clicks")
+        .select("banner_id")
+        .in("banner_id", ids);
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      data.forEach((row) => {
+        counts[row.banner_id] = (counts[row.banner_id] || 0) + 1;
+      });
+      return counts;
+    },
+    enabled: !!banners?.length,
   });
 
   const deleteBanner = useMutation({
@@ -211,6 +230,10 @@ const AdminBannerManager = () => {
                     {banner.link_url}
                   </p>
                 )}
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                  <MousePointerClick className="h-3 w-3" />
+                  {clickCounts?.[banner.id] || 0} cliques
+                </p>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
