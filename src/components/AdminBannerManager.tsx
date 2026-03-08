@@ -39,6 +39,25 @@ const AdminBannerManager = () => {
     },
   });
 
+  const { data: clickCounts } = useQuery({
+    queryKey: ["banner-clicks-count", filterPlacement],
+    queryFn: async () => {
+      if (!banners?.length) return {};
+      const ids = banners.map((b) => b.id);
+      const { data, error } = await supabase
+        .from("banner_clicks")
+        .select("banner_id")
+        .in("banner_id", ids);
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      data.forEach((row) => {
+        counts[row.banner_id] = (counts[row.banner_id] || 0) + 1;
+      });
+      return counts;
+    },
+    enabled: !!banners?.length,
+  });
+
   const deleteBanner = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("banners").delete().eq("id", id);
