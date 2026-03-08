@@ -14,6 +14,32 @@ export type Database = {
   }
   public: {
     Tables: {
+      banner_clicks: {
+        Row: {
+          banner_id: string
+          clicked_at: string
+          id: string
+        }
+        Insert: {
+          banner_id: string
+          clicked_at?: string
+          id?: string
+        }
+        Update: {
+          banner_id?: string
+          clicked_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "banner_clicks_banner_id_fkey"
+            columns: ["banner_id"]
+            isOneToOne: false
+            referencedRelation: "banners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       banners: {
         Row: {
           created_at: string
