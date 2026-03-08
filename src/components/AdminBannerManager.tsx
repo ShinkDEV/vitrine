@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { toast } from "sonner";
-import { Plus, Trash2, Image, ExternalLink, Pencil } from "lucide-react";
+import { Plus, Trash2, Image, ExternalLink, Pencil, MousePointerClick } from "lucide-react";
 import BannerCropDialog from "@/components/BannerCropDialog";
 
 const AdminBannerManager = () => {
