@@ -34,7 +34,12 @@ const BannerCarousel = ({ placement }: BannerCarouselProps) => {
         {banners.map((banner) => (
           <div key={banner.id} className="rounded-xl overflow-hidden shadow-card">
             {banner.link_url ? (
-              <a href={banner.link_url} target="_blank" rel="noopener noreferrer">
+              <a
+                href={banner.link_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackClick(banner.id)}
+              >
                 <AspectRatio ratio={4 / 1}>
                   <img
                     src={banner.image_url}
