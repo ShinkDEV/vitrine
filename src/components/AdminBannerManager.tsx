@@ -230,6 +230,10 @@ const AdminBannerManager = () => {
                     {banner.link_url}
                   </p>
                 )}
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                  <MousePointerClick className="h-3 w-3" />
+                  {clickCounts?.[banner.id] || 0} cliques
+                </p>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
