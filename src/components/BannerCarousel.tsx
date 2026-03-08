@@ -6,6 +6,10 @@ interface BannerCarouselProps {
   placement: "home" | "dashboard";
 }
 
+const trackClick = async (bannerId: string) => {
+  await supabase.from("banner_clicks").insert({ banner_id: bannerId });
+};
+
 const BannerCarousel = ({ placement }: BannerCarouselProps) => {
   const { data: banners } = useQuery({
     queryKey: ["banners", placement],
