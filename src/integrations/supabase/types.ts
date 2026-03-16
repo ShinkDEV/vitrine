@@ -453,6 +453,38 @@ export type Database = {
         }
         Relationships: []
       }
+      rejection_history: {
+        Row: {
+          created_at: string
+          id: string
+          professional_id: string
+          reason: string
+          rejected_by: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          professional_id: string
+          reason: string
+          rejected_by: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          professional_id?: string
+          reason?: string
+          rejected_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rejection_history_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seals: {
         Row: {
           created_at: string
