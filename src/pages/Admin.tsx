@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, CreditCard, MessageCircle, FileText, Copy, Mail, ExternalLink, GitCompare, GraduationCap, Trash2, ShieldBan } from "lucide-react";
+import { CheckCircle2, XCircle, Eye, Pause, Play, Clock, Award, MapPin, CreditCard, MessageCircle, FileText, Copy, Mail, ExternalLink, GitCompare, GraduationCap, Trash2, ShieldBan, History } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -217,6 +217,28 @@ const Admin = () => {
     enabled: !!previewPro?.id,
   });
 
+  // Fetch rejection history for all pending professionals
+  const pendingProIds = professionals?.filter((p: any) => p.status === "pendente").map((p: any) => p.id) ?? [];
+  const { data: rejectionHistoryMap } = useQuery({
+    queryKey: ["rejection-history", pendingProIds],
+    queryFn: async () => {
+      if (pendingProIds.length === 0) return {};
+      const { data, error } = await supabase
+        .from("rejection_history")
+        .select("*")
+        .in("professional_id", pendingProIds)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      const map: Record<string, any[]> = {};
+      data?.forEach((r: any) => {
+        if (!map[r.professional_id]) map[r.professional_id] = [];
+        map[r.professional_id].push(r);
+      });
+      return map;
+    },
+    enabled: pendingProIds.length > 0,
+  });
+
   // Fetch pending changes for comparison
   const { data: pendingChangeData } = useQuery({
     queryKey: ["pending-change-detail", compareProId],
@@ -395,10 +417,21 @@ const Admin = () => {
       toast.error("Informe o motivo da rejeição.");
       return;
     }
+    // Save to rejection history
+    try {
+      await supabase.from("rejection_history").insert({
+        professional_id: rejectingId,
+        reason: rejectionReason.trim(),
+        rejected_by: user!.id,
+      });
+    } catch (e) {
+      console.error("Failed to save rejection history:", e);
+    }
     updateStatus.mutate(
       { id: rejectingId, status: "rejeitado", reason: rejectionReason.trim() },
       {
         onSuccess: async () => {
+          queryClient.invalidateQueries({ queryKey: ["rejection-history"] });
           // Send rejection email
           try {
             const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
@@ -523,6 +556,24 @@ const Admin = () => {
                         </p>
                         {pro._hasPending && (
                           <span className="text-xs text-primary font-medium">📝 Alterações pendentes</span>
+                        )}
+                        {pro.status === "pendente" && rejectionHistoryMap && (rejectionHistoryMap as Record<string, any[]>)[pro.id]?.length > 0 && (
+                          <details className="mt-1">
+                            <summary className="text-xs text-amber-600 font-medium cursor-pointer flex items-center gap-1">
+                              <History className="h-3 w-3" />
+                              {(rejectionHistoryMap as Record<string, any[]>)[pro.id].length} rejeição(ões) anterior(es)
+                            </summary>
+                            <div className="mt-1.5 space-y-1 pl-4 border-l-2 border-amber-200">
+                              {(rejectionHistoryMap as Record<string, any[]>)[pro.id].map((r: any) => (
+                                <div key={r.id} className="text-xs text-muted-foreground">
+                                  <span className="text-amber-700 font-medium">
+                                    {new Date(r.created_at).toLocaleDateString("pt-BR")}:
+                                  </span>{" "}
+                                  {r.reason}
+                                </div>
+                              ))}
+                            </div>
+                          </details>
                         )}
                       </div>
                     </div>
