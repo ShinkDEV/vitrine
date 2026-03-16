@@ -395,10 +395,21 @@ const Admin = () => {
       toast.error("Informe o motivo da rejeição.");
       return;
     }
+    // Save to rejection history
+    try {
+      await supabase.from("rejection_history").insert({
+        professional_id: rejectingId,
+        reason: rejectionReason.trim(),
+        rejected_by: user!.id,
+      });
+    } catch (e) {
+      console.error("Failed to save rejection history:", e);
+    }
     updateStatus.mutate(
       { id: rejectingId, status: "rejeitado", reason: rejectionReason.trim() },
       {
         onSuccess: async () => {
+          queryClient.invalidateQueries({ queryKey: ["rejection-history"] });
           // Send rejection email
           try {
             const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
