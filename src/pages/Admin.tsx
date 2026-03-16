@@ -557,6 +557,24 @@ const Admin = () => {
                         {pro._hasPending && (
                           <span className="text-xs text-primary font-medium">📝 Alterações pendentes</span>
                         )}
+                        {pro.status === "pendente" && rejectionHistoryMap && (rejectionHistoryMap as Record<string, any[]>)[pro.id]?.length > 0 && (
+                          <details className="mt-1">
+                            <summary className="text-xs text-amber-600 font-medium cursor-pointer flex items-center gap-1">
+                              <History className="h-3 w-3" />
+                              {(rejectionHistoryMap as Record<string, any[]>)[pro.id].length} rejeição(ões) anterior(es)
+                            </summary>
+                            <div className="mt-1.5 space-y-1 pl-4 border-l-2 border-amber-200">
+                              {(rejectionHistoryMap as Record<string, any[]>)[pro.id].map((r: any) => (
+                                <div key={r.id} className="text-xs text-muted-foreground">
+                                  <span className="text-amber-700 font-medium">
+                                    {new Date(r.created_at).toLocaleDateString("pt-BR")}:
+                                  </span>{" "}
+                                  {r.reason}
+                                </div>
+                              ))}
+                            </div>
+                          </details>
+                        )}
                       </div>
                     </div>
 
