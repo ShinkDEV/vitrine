@@ -217,6 +217,28 @@ const Admin = () => {
     enabled: !!previewPro?.id,
   });
 
+  // Fetch rejection history for all pending professionals
+  const pendingProIds = professionals?.filter((p: any) => p.status === "pendente").map((p: any) => p.id) ?? [];
+  const { data: rejectionHistoryMap } = useQuery({
+    queryKey: ["rejection-history", pendingProIds],
+    queryFn: async () => {
+      if (pendingProIds.length === 0) return {};
+      const { data, error } = await supabase
+        .from("rejection_history")
+        .select("*")
+        .in("professional_id", pendingProIds)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      const map: Record<string, any[]> = {};
+      data?.forEach((r: any) => {
+        if (!map[r.professional_id]) map[r.professional_id] = [];
+        map[r.professional_id].push(r);
+      });
+      return map;
+    },
+    enabled: pendingProIds.length > 0,
+  });
+
   // Fetch pending changes for comparison
   const { data: pendingChangeData } = useQuery({
     queryKey: ["pending-change-detail", compareProId],
