@@ -56,6 +56,19 @@ const Dashboard = () => {
     enabled: !!user,
   });
 
+  const { data: courses } = useQuery({
+    queryKey: ["my-courses-dashboard", professional?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("professional_courses")
+        .select("id, certificate_url")
+        .eq("professional_id", professional!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!professional?.id,
+  });
+
   // Reactivation dialog state
   const [reactivateOpen, setReactivateOpen] = useState(false);
   const [reactivateOption, setReactivateOption] = useState("dados-atualizados");
