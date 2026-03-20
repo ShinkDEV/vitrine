@@ -56,6 +56,19 @@ const Dashboard = () => {
     enabled: !!user,
   });
 
+  const { data: courses } = useQuery({
+    queryKey: ["my-courses-dashboard", professional?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("professional_courses")
+        .select("id, certificate_url")
+        .eq("professional_id", professional!.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!professional?.id,
+  });
+
   // Reactivation dialog state
   const [reactivateOpen, setReactivateOpen] = useState(false);
   const [reactivateOption, setReactivateOption] = useState("dados-atualizados");
@@ -120,6 +133,7 @@ const Dashboard = () => {
     { label: "Pelo menos 1 serviço", done: (professional?.services?.length ?? 0) >= 1 },
     { label: "WhatsApp configurado", done: !!professional?.whatsapp_number },
     { label: "Portfólio com no mínimo 3 fotos", done: (professional?.portfolio_photos?.length ?? 0) >= 3 },
+    { label: "Pelo menos 1 curso com certificado", done: (courses?.filter(c => !!c.certificate_url)?.length ?? 0) >= 1 },
   ];
   const completedCount = checks.filter((c) => c.done).length;
   const completionPercent = Math.round((completedCount / checks.length) * 100);
